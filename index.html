@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>String Art Generator</title>
+    <meta name="description" content="Turn any photo into string art. Square, circle, landscape and portrait boards, printable nail templates and winding sequences.">
+    <link rel="stylesheet" type="text/css" href="css/controls.css">
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+<body>
+    <h1>String Art Generator</h1>
+    <div class="generator" id="generator-box">
+        <div class="drag-drop" id="drag-drop-box" style="display: none">
+            <div class="drag-drop-table">
+                <div>Drop the file to load the image</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-block centered no-top-padding">
+                <input type="submit" id="select-btn" value="Choose image"><br>
+            </div>
+
+            <div id="controls-box">
+                <div class="control-block no-top-padding">
+                    <label><b>Board shape</b>
+                        <select id="form-type-box" disabled>
+                            <option value="circle" selected>Circle</option>
+                            <option value="rect">Square</option>
+                            <option value="album">Landscape</option>
+                            <option value="portrait">Portrait</option>
+                            <option value="hexagon">Hexagon (flat top)</option>
+                            <option value="hexagon-pointy">Hexagon (pointy top)</option>
+                            <option value="oval-horizontal">Oval (horizontal)</option>
+                            <option value="oval-vertical">Oval (vertical)</option>
+                            <option value="image">Match image</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="control-block no-top-padding">
+                    <input type="checkbox" id="invert-box" disabled> <label for="invert-box">Invert brightness</label>
+                </div>
+
+                <div class="control-block no-margin no-top-padding">
+                    <label><b>Contrast</b><br>
+                        <input type="range" id="contrast-box" value="0" min="-100" max="100" step="5" disabled>
+                    </label>
+                    <div class="range-label" id="contrast-value">0</div>
+
+                    <label><b>Brightness</b><br>
+                        <input type="range" id="brightness-box" value="0" min="-100" max="100" step="5" disabled>
+                    </label>
+                    <div class="range-label" id="brightness-value">0</div>
+                </div>
+
+                <div class="control-block no-top-padding">
+                    <label><b>Nail layout</b>
+                        <select id="nails-mode-box" disabled>
+                            <option value="border" selected>Along the edge</option>
+                            <option value="grid">Grid</option>
+                            <option value="random">Random</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="control-block no-top-padding">
+                    <label><b>Number of nails</b><br>
+                        <input type="number" id="nails-count-box" value="250" min="50" max="1000" disabled>
+                    </label>
+                </div>
+
+                <div class="control-block no-top-padding">
+                    <label><b>Show nail numbers</b>
+                        <select id="nail-numbers-box" disabled>
+                            <option value="off" selected>Off</option>
+                            <option value="all">Every nail</option>
+                            <option value="5">Every 5th nail</option>
+                            <option value="10">Every 10th nail</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="control-block">
+                    <label><b>Number of lines</b><br>
+                        <input type="number" id="lines-count-box" value="2000" min="100" max="10000" disabled>
+                    </label>
+                </div>
+
+                <div class="control-block">
+                    <label><b>Line opacity</b><br>
+                        <input type="range" id="lines-weight-box" value="10" min="1" max="100" disabled>
+                    </label>
+                    <div class="range-label" id="lines-weight-value">10%</div>
+                </div>
+
+                <div class="control-block no-margin">
+                    <input type="color" id="lines-color-box" value="#000000" disabled> <label for="lines-color-box"><b>Line color</b></label>
+                </div>
+
+                <div class="control-block">
+                    <input type="color" id="background-color-box" value="#ffffff" disabled> <label for="background-color-box"><b>Background color</b></label>
+                </div>
+
+                <div class="control-block centered">
+                    <input type="submit" id="generate-btn" value="Generate" disabled>
+                    <input type="submit" id="reset-btn" value="Reset" disabled>
+                    <div id="status-box"></div>
+                </div>
+            </div>
+
+            <div class="control-block">
+                <div id="info-box">Choose an image or drag one onto this panel to start.</div>
+            </div>
+
+            <div id="save-box" style="display: none">
+                <hr>
+                <div class="control-block no-top-padding">
+                    <label><b>Save as:</b>
+                        <select id="save-type-box">
+                            <option value="png">Image (PNG)</option>
+                            <option value="svg">Vector (SVG)</option>
+                            <option value="template">Nail template (SVG, numbered)</option>
+                            <option value="sequence">Winding sequence (TXT)</option>
+                            <option value="stringart">Project file (.stringart)</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="control-block no-top-padding centered">
+                    <input type="submit" id="save-btn" value="Save">
+                </div>
+            </div>
+        </div>
+
+        <div class="view">
+            <div class="canvas-wrap">
+                <canvas id="canvas"></canvas>
+                <canvas id="overlay" aria-hidden="true"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <p class="footer">Everything runs in your browser — images are never uploaded anywhere.</p>
+
+    <script src="js/constants.js"></script>
+    <script src="js/string_art_generator.js"></script>
+    <script src="js/init.js"></script>
+    <script src="js/events.js"></script>
+    <script src="js/draw.js"></script>
+    <script src="js/shapes.js"></script>
+    <script>
+        let canvas = document.getElementById('canvas')
+        let generator = new StringArtGenerator(canvas)
+    </script>
+</body>
+</html>
