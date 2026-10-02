@@ -297,6 +297,7 @@ StringArtGenerator.prototype.GenerateIteration = function(nail, linesCount, tota
 
     let next = this.GetNextNail(nail)
     this.RemoveLine(next.line, lineWeight)
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)     // see ApplyScale
     this.DrawLine(this.nails[nail], this.nails[next.nail], lineColor)
 
     window.requestAnimationFrame(() => this.GenerateIteration(next.nail, linesCount - 1, totalCount, lineWeight, lineColor, startTime))

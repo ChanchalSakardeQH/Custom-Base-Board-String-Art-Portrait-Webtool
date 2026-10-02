@@ -55,6 +55,15 @@ StringArtGenerator.prototype.InitCanvas = function(canvas) {
     this.origCtx = this.origCanvas.getContext('2d')
     this.origCtx.scale(this.dpr, this.dpr)
 
+    // If the browser wipes and restores a canvas (common on phones when switching apps), repaint it
+    for (let c of [this.canvas, this.overlay, this.origCanvas, this.fakeCanvas])
+        c.addEventListener('contextrestored', () => this.RedrawCurrent())
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState == 'visible')
+            this.RedrawCurrent()
+    })
+
     this.pixelCanvas = document.createElement('canvas')
     this.pixelCanvas.width = this.width
     this.pixelCanvas.height = this.height

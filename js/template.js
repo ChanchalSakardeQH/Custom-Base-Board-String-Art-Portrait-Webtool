@@ -861,7 +861,6 @@ async function TemplateToPDF(m, paperKey, unit) {
 
     countBox.addEventListener('change', () => {
         state.count = Math.round(readNumber(countBox, 20, 1000, state.count))
-        countBox.value = state.count
         refresh()
     })
 
@@ -900,8 +899,10 @@ async function TemplateToPDF(m, paperKey, unit) {
         shapes.querySelectorAll('button').forEach(b => b.disabled = fromArt)
         document.querySelectorAll('#tpl-layout button').forEach(b => b.disabled = fromArt)
         countBox.disabled = fromArt
-        if (fromArt || document.activeElement !== countBox)   // never overwrite what is being typed
+        if (fromArt)
             countBox.value = model.count
+        // Show the real count: a grid can hold a few nails more or less than the slider asks for
+        document.getElementById('tpl-count-value').textContent = model.count.toLocaleString('en')
 
         let desc = TemplateDescription(model, state.unit)
         let L = TemplatePageLayout(model, state.paper)

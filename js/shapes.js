@@ -269,6 +269,7 @@ StringArtGenerator.prototype.GetNailSpacing = function() {
 // On-screen nail numbers, drawn on a separate layer so they never affect the generated art
 StringArtGenerator.prototype.DrawNailNumbers = function() {
     let ctx = this.overlayCtx
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)     // see ApplyScale
     ctx.clearRect(0, 0, this.width, this.height)
 
     let mode = this.nailNumbersBox.value

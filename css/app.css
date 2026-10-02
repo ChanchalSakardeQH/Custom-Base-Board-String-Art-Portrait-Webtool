@@ -1003,3 +1003,10 @@ input[type="range"]:disabled { cursor: not-allowed; }
 #panel-template .actions { flex-wrap: wrap; }
 #panel-template .actions .btn-big { flex-basis: 100%; }
 #panel-template .actions .btn-ghost { flex: 1; }
+
+/* Bigger slider thumbs for fingers on phones and tablets */
+@media (max-width: 860px), (pointer: coarse) {
+    input[type="range"] { height: 34px; }
+    input[type="range"]::-webkit-slider-thumb { width: 24px; height: 24px; margin-top: -11px; }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; }
+}

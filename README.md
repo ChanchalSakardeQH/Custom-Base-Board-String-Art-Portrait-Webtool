@@ -17,7 +17,7 @@
 
 <p align="center">
   <a href="https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file"><img src="https://img.shields.io/badge/license-GPL--3.0-blue.svg" alt="License: GPL-3.0"></a>
-  <img src="https://img.shields.io/badge/version-4.0.0-E7004E.svg" alt="Version 4.0.0">
+  <img src="https://img.shields.io/badge/version-4.1.0-E7004E.svg" alt="Version 4.1.0">
   <img src="https://img.shields.io/badge/runs-in%20your%20browser-2B5246.svg" alt="Runs in your browser">
 </p>
 

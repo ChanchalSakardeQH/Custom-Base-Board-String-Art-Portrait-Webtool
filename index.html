@@ -123,8 +123,8 @@
                     </div>
                 </div>
                 <div class="field">
-                    <label for="nails-count-box" class="field-label">Number of nails</label>
-                    <input type="number" id="nails-count-box" value="250" min="50" max="1000" disabled>
+                    <div class="field-row"><label for="nails-count-box">Number of nails</label><output id="nails-count-value" for="nails-count-box">250</output></div>
+                    <input type="range" id="nails-count-box" value="250" min="50" max="1000" step="10" data-output="nails-count-value" disabled>
                 </div>
                 <div class="field">
                     <span class="field-label" id="nail-numbers-label">Show nail numbers</span>
@@ -146,8 +146,8 @@
             <section class="group">
                 <h2>Thread</h2>
                 <div class="field">
-                    <label for="lines-count-box" class="field-label">Number of lines</label>
-                    <input type="number" id="lines-count-box" value="2000" min="100" max="10000" disabled>
+                    <div class="field-row"><label for="lines-count-box">Number of lines</label><output id="lines-count-value" for="lines-count-box">2,000</output></div>
+                    <input type="range" id="lines-count-box" value="2000" min="100" max="10000" step="100" data-output="lines-count-value" disabled>
                 </div>
                 <div class="field">
                     <div class="field-row"><label for="lines-weight-box">Line opacity</label><output id="lines-weight-value">10%</output></div>
@@ -202,8 +202,8 @@
                         </div>
                     </div>
                     <div class="field">
-                        <label for="tpl-count" class="field-label">Number of nails</label>
-                        <input type="number" id="tpl-count" value="250" min="20" max="1000">
+                        <div class="field-row"><label for="tpl-count">Number of nails</label><output id="tpl-count-value" for="tpl-count">250</output></div>
+                        <input type="range" id="tpl-count" value="250" min="50" max="1000" step="10" data-output="tpl-count-value">
                     </div>
                     <p class="note">Use the same shape, layout and number of nails on the String art tab and the numbers will match this template.</p>
                 </section>

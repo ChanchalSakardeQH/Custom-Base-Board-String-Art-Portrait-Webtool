@@ -103,7 +103,39 @@ StringArtGenerator.prototype.DrawGrayScale = function() {
     this.ctx.drawImage(this.fakeCanvas, 0, 0, this.width, this.height)
 }
 
+// High-density screens draw at devicePixelRatio. Mobile browsers can wipe a canvas's state (for example
+// while the phone's gallery is open to pick a photo), which silently resets this scale to 1 and makes
+// everything draw at a fraction of its size. So it is set again before every draw instead of once.
+StringArtGenerator.prototype.ApplyScale = function() {
+    for (let ctx of [this.ctx, this.fakeCtx, this.overlayCtx, this.origCtx])
+        if (ctx)
+            ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)
+}
+
+// Repaint whatever should be on screen right now (after the browser restores a wiped canvas)
+StringArtGenerator.prototype.RedrawCurrent = function() {
+    this.ApplyScale()
+
+    if (this.isLineDrawing && this.sequence && this.sequence.length > 0) {
+        // The art is rebuilt exactly from the thread sequence
+        let color = this.GetLineColor()
+        this.Clear(this.ctx)
+        this.DrawNails()
+
+        for (let i = 1; i < this.sequence.length; i++)
+            this.DrawLine(this.nails[this.sequence[i - 1]], this.nails[this.sequence[i]], color)
+
+        this.DrawOriginal()
+    }
+    else if (this.image) {
+        this.DrawLoadedImage()
+    }
+
+    this.DrawNailNumbers()
+}
+
 StringArtGenerator.prototype.DrawLoadedImage = function() {
+    this.ApplyScale()
     this.Clear(this.ctx)
 
     this.ctx.save()
@@ -122,6 +154,7 @@ StringArtGenerator.prototype.DrawOriginal = function() {
         return
 
     let ctx = this.origCtx
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)
     ctx.clearRect(0, 0, this.width, this.height)
     ctx.save()
     this.DrawForm(ctx)

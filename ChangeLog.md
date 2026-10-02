@@ -7,6 +7,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 Copyright © 2026 Chanchal Sakarde · [woodyouloveit.com](https://woodyouloveit.com) · [wooduloveit.com](https://wooduloveit.com) · [GPL-3.0 License](https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file)
 
+## [4.1.0] - 2026-10-02
+
+### Fixed
+- **Phones: art and photo drawn at a third of the board's size.** On high-density screens the canvas scale was set once at start-up. Android Chrome can wipe a canvas's state while the gallery app is open to pick a photo, which reset that scale and made the preview, the original view, the generated art and the PNG export all fill only the top-left corner. The scale is now applied before every draw, and the screen is repainted (art rebuilt from the thread sequence) whenever the browser restores a canvas or you return to the tab.
+
+### Changed
+- **Number of nails** and **Number of lines** are now sliders with a live value, on both the String art and Board template tabs (nails 50–1,000 in steps of 10, lines 100–10,000 in steps of 100). Slider thumbs are larger on touch screens.
+
 ## [4.0.0] - 2026-10-02
 
 ### Added

@@ -57,6 +57,15 @@
         sync()
     })
 
+    // ---------- Sliders show their value while dragging ----------
+    document.querySelectorAll('input[type="range"][data-output]').forEach(slider => {
+        const output = document.getElementById(slider.dataset.output)
+        const show = () => output.textContent = (+slider.value).toLocaleString('en')
+        slider.addEventListener('input', show)
+        slider.addEventListener('change', show)
+        show()
+    })
+
     // ---------- Original ⇄ String art ----------
     function showOriginal(show) {
         if (app.classList.contains('show-original') == show)
