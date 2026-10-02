@@ -1,3 +1,28 @@
+/*
+ * Custom Base Board String Art Portrait Webtool
+ * woodyouloveit.com · wooduloveit.com
+ *
+ * js/ui.js - Page UI: chips, Original/String art flip, modes, progress, exports.
+ *
+ * Copyright (C) 2026 Chanchal Sakarde
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file
+ */
+
 // Page UI around the generator: shape / option chips, the Original ⇄ String art flip,
 // the progress thread, export buttons and the empty-state animation.
 (function() {
@@ -56,7 +81,7 @@
     document.addEventListener('keydown', (e) => {
         if (e.key != 'f' && e.key != 'F')
             return
-        if (e.ctrlKey || e.metaKey || e.altKey || btnArt.disabled)
+        if (e.ctrlKey || e.metaKey || e.altKey || btnArt.disabled || app.classList.contains('mode-template'))
             return
         if (/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName) && document.activeElement.type != 'range' && document.activeElement.type != 'checkbox')
             return
@@ -100,9 +125,54 @@
 
     const saveType = document.getElementById('save-type-box')
     document.querySelectorAll('[data-save]').forEach(btn => btn.addEventListener('click', () => {
+        // "Board template…" opens the Board template tab with this art's nails
+        if (btn.dataset.save == 'template') {
+            setMode('template')
+            if (window.OpenBoardTemplate) window.OpenBoardTemplate(true)
+            return
+        }
+
         saveType.value = btn.dataset.save
         generator.Save()
     }))
+
+    // ---------- Modes: String art | Board template ----------
+    const tabs = { art: document.getElementById('tab-art'), template: document.getElementById('tab-template') }
+    const panels = { art: document.getElementById('panel-art'), template: document.getElementById('panel-template') }
+    const stages = { art: document.getElementById('stage-art'), template: document.getElementById('stage-template') }
+
+    function setMode(mode) {
+        for (let key of ['art', 'template']) {
+            let on = key == mode
+            tabs[key].setAttribute('aria-selected', on)
+            tabs[key].tabIndex = on ? 0 : -1
+            panels[key].hidden = !on
+            stages[key].hidden = !on
+        }
+
+        app.classList.toggle('mode-template', mode == 'template')
+        document.dispatchEvent(new CustomEvent('stringart:mode', { detail: { mode: mode } }))
+    }
+
+    tabs.art.addEventListener('click', () => setMode('art'))
+    tabs.template.addEventListener('click', () => setMode('template'))
+
+    // Arrow keys move between the two tabs
+    document.querySelector('.mode-tabs').addEventListener('keydown', (e) => {
+        if (e.key != 'ArrowLeft' && e.key != 'ArrowRight')
+            return
+        let next = app.classList.contains('mode-template') ? 'art' : 'template'
+        setMode(next)
+        tabs[next].focus()
+    })
+
+    // Choosing a photo always happens on the String art tab
+    document.getElementById('select-btn').addEventListener('click', () => {
+        if (app.classList.contains('mode-template'))
+            setMode('art')
+    })
+
+    setMode('art')
 
     // ---------- Empty state: a little hexagon board threads itself once on load ----------
     function drawEmptyArt() {

@@ -1,44 +1,75 @@
-# String Art Generator
+<p align="center">
+  <a href="https://woodyouloveit.com"><img src="docs/logo.png" alt="woodyouloveit" width="420"></a>
+</p>
 
-Turn any photo into string art — right in your browser. Choose a circle, square, landscape, portrait, hexagon or oval board, generate the art, then download a **printable numbered nail template** and the **winding sequence** to build it for real.
+<h1 align="center">Custom Base Board String Art Portrait Webtool</h1>
 
-![Generator in action](examples/ "Generator in action")
+<p align="center">
+  Turn any photo into string art, or print an actual-size board template with every nail numbered.<br>
+  By <a href="https://woodyouloveit.com">woodyouloveit.com</a> · <a href="https://wooduloveit.com">wooduloveit.com</a>
+</p>
 
-**Live demo:** `[String Art Generator](https://chanchalsakardeqh.github.io/Custom-Base-Board-String-Art-Portrait-Webtool/)`
+<p align="center">
+  <a href="https://chanchalsakardeqh.github.io/Custom-Base-Board-String-Art-Portrait-Webtool/"><b>Open the live tool</b></a> ·
+  <a href="ChangeLog.md">ChangeLog</a> ·
+  <a href="https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file">GPL-3.0 License</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file"><img src="https://img.shields.io/badge/license-GPL--3.0-blue.svg" alt="License: GPL-3.0"></a>
+  <img src="https://img.shields.io/badge/version-4.0.0-E7004E.svg" alt="Version 4.0.0">
+  <img src="https://img.shields.io/badge/runs-in%20your%20browser-2B5246.svg" alt="Runs in your browser">
+</p>
+
+![String art mode](docs/screenshot-string-art.png "String art mode")
+
+## Two tools in one
+
+### String art
+
+Load a photo, position it on the board, and watch the thread being drawn line by line. Then download the art and the winding sequence to build it for real.
+
+### Board template (no photo needed)
+
+Print an actual-size template with every nail position and its number. Tape it to your board, hammer a nail on each dot, then tear the paper away. You can make a template for a custom board, or one that uses the exact nails of the art you just generated.
+
+![Board template mode](docs/screenshot-board-template.png "Board template mode")
 
 ## Features
 
-* Converts any image into string-art style.
-* Board shapes: **Circle**, **Square**, **Landscape**, **Portrait** (A-series 1:√2 ratio), **Hexagon** (flat top or pointy top), **Oval** (horizontal or vertical, 1:√2), or **Match image**.
+* **Board shapes:** Circle, Square, Landscape, Portrait (A-series 1:√2), Hexagon (flat top or pointy top), Oval (horizontal or vertical, 1:√2), or Match photo.
   * Hexagon nails are shared out side by side so every corner gets a nail. Use a nail count that's a multiple of 6 (e.g. 240 or 252) for perfectly even spacing.
-  * Oval nails are spaced evenly along the curve, not by angle, so they don't bunch up at the narrow ends.
-* **Full-page workbench interface**: settings on the left, the board on a cutting-mat stage, and a progress thread with live stats while the art is drawn. On phones the board comes first and the Generate button stays pinned to the bottom of the screen.
-* **Original ⇄ String art flip**: the board is a two-sided card. Flip it with the toggle above the board (or press **F**) to compare your photo, cropped exactly like the board, with the generated art. You can zoom and position the photo on either side. If your system is set to reduce motion, the flip becomes a crossfade.
-* **Show nail numbers** on screen: every nail, every 5th or every 10th, with nail 1 in red. Handy for checking the layout before generating and for following the winding sequence. The numbers sit on a separate layer, so they never affect the generated art; PNG export includes them when they're switched on.
-* Nail layouts: along the edge, grid, or random.
-* Exports:
-  * **Image (PNG)** – the rendered art.
-  * **Vector (SVG)** – the art as scalable lines.
-  * **Nail template (SVG, numbered)** – board outline plus every nail with its number. Print it at your board size, tape it on, and hammer a nail at each dot. Nail 1 is shown in red.
-  * **Winding sequence (TXT)** – the order to wrap the thread, using the same nail numbers as the template.
-  * **Project file (.stringart)** – JSON with nail coordinates, colors and the full sequence.
+  * Oval nails are spaced evenly along the curve, so they don't bunch up at the narrow ends.
+  * Nails are numbered in one continuous clockwise loop around every shape.
+* **Nail layouts:** along the edge, grid, or random (random is String art only).
+* **Original ⇄ String art flip:** the board is a two-sided card. Flip it with the toggle above the board (or press **F**) to compare your photo with the generated art.
+* **Nail numbers on screen:** every nail, every 5th or every 10th, with nail 1 in red.
+* **Board template:**
+  * Real-world size in mm, cm or inches: set the board's longest side and how far the nails sit from the edge.
+  * Pin numbers on every nail, every 5th or every 10th, rotated to read outward from the board.
+  * Print on **one actual-size sheet** (for a print shop) or split across **A4, A3 or Letter** pages, with trim lines and page labels for taping together.
+  * A 100 mm scale bar on every template so you can confirm it printed at 100%.
+  * Warns you when nails would be closer than 3 mm.
+* **Exports, all carrying the woodyouloveit logo, websites and copyright:**
 
-Image adjustments for a better result:
+| Export | What it is | Branding |
+| --- | --- | --- |
+| PNG image | The rendered art (with nail numbers if shown) | Logo, websites and copyright in a footer strip |
+| SVG vector | The art as scalable lines | Logo footer, plus a title, description and comment |
+| Winding sequence (TXT) | The order to wrap the thread | Header and footer lines |
+| Project file (.stringart) | JSON with nails, colours and sequence | An `about` block with author, websites and licence |
+| Board template PDF | Actual-size sheet or tiled pages | Title block with logo on the sheet, logo footer on every page, PDF metadata |
+| Board template SVG | Actual-size sheet (sized in mm) | Title block with logo, title, description and comment |
+| Board template PNG | Actual-size sheet at 300 DPI (DPI embedded) | Title block with logo |
 
-* brightness
-* contrast
-* invert brightness
+## Using it
 
-Art settings:
+1. **String art:** click **Choose image** (or drop a photo on the page), pick a board shape, zoom and drag the photo into place, then press **Generate**. Press **Pause** at any time and **Continue** to add more lines.
+2. **Board template:** open the **Board template** tab. Pick a shape, the number of nails, the board size and the paper, then **Download PDF**. To get the template for art you've generated, choose **Board template…** in the String art download row.
 
-* **Number of nails** – more nails allow a more accurate, detailed result.
-* **Number of lines** – controls the level of detail.
-* **Line opacity** – overlapping semi-transparent lines create shades of grey.
-* **Line and background color** – in case you want to add some color.
+The numbers on a custom template match a String art run that uses the same shape, layout and number of nails.
 
-**Positioning the image:** zoom with the mouse wheel (or pinch on touch screens) and drag to move it inside the board before generating. While generating, click **Pause**; click **Continue** to add more lines from where the thread stopped.
-
-## How it works
+## How the generator works
 
 1. Start at a nail, then decide which nail to draw the next line to.
 2. For every possible line, compute the average brightness of the source-image pixels under it.
@@ -46,41 +77,55 @@ Art settings:
 4. "Remove" that line from the source image by adding the opacity value to its pixels.
 5. The nail at the end of that line becomes the new start, and the process repeats.
 
-### About opacity
-
 At 100% opacity a single line turns all of its pixels white, so the picture quickly fills in as a solid shape. Lower opacity lets lines stack up to build shades.
 
 ## Run it on GitHub Pages
 
-This is a static site (plain HTML/CSS/JS, no build step), so GitHub Pages can serve it directly.
+This is a static site (plain HTML, CSS and JavaScript, no build step), so GitHub Pages serves it directly.
 
-1. Create a new repository on GitHub and upload the contents of this folder (so `index.html` sits at the repository root).
+1. Upload the contents of this folder to your repository, so `index.html` sits at the root.
 2. Go to **Settings → Pages**.
 3. Under **Build and deployment**, set **Source** to **Deploy from a branch**, choose **main** and **/ (root)**, then click **Save**.
 4. After a minute or so the site is live at `https://<your-username>.github.io/<your-repo-name>/`.
 
-Or from the command line:
-
-```bash
-cd StringArtGenerator
-git init
-git add .
-git commit -m "String Art Generator"
-git branch -M main
-git remote add origin https://github.com/<your-username>/<your-repo-name>.git
-git push -u origin main
-```
-
-Then enable Pages as in step 2–3 above.
-
 ## Run it locally
-
-Open `index.html` directly in a browser, or serve the folder:
 
 ```bash
 python3 -m http.server 8000
 # then open http://localhost:8000
 ```
+
+Opening `index.html` straight from disk also works, including PDF export (the PDF library is bundled in `js/vendor/`).
+
+## Project layout
+
+```
+index.html               the page
+css/app.css              styles
+js/brand.js              logo, websites and copyright used on the page and in exports
+js/string_art_generator.js, init.js, events.js, draw.js, constants.js   generator core
+js/shapes.js             hexagon and oval boards, nail-number overlay
+js/template.js           Board template: geometry, SVG / PNG / PDF output, tiling
+js/ui.js                 page UI: tabs, flip, progress, downloads
+js/vendor/               jsPDF (MIT) for PDF export
+docs/                    logo and screenshots
+```
+
+## Copyright and license
+
+<a href="https://woodyouloveit.com"><img src="docs/logo.png" alt="woodyouloveit" width="200"></a>
+
+Copyright © 2026 **Chanchal Sakarde** · [woodyouloveit.com](https://woodyouloveit.com) · [wooduloveit.com](https://wooduloveit.com)
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [GPL-3.0 License](https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file) (`LICENSE` in this repository) for details.
+
+The woodyouloveit name and logo identify this project and are not covered by the GPL. If you publish a modified version, please use your own branding.
+
+### Credits
+
+* Based on [StringArtGenerator](https://github.com/dronperminov/StringArtGenerator) by dronperminov.
+* PDF export uses [jsPDF](https://github.com/parallax/jsPDF) © James Hall and yWorks GmbH, MIT License (`js/vendor/LICENSE-jspdf.txt`).
+* Interface font: [Archivo](https://fonts.google.com/specimen/Archivo), SIL Open Font License.
 
 ## Examples
 

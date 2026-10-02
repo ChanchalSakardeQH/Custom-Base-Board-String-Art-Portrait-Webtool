@@ -1,3 +1,29 @@
+/*
+ * Custom Base Board String Art Portrait Webtool
+ * woodyouloveit.com · wooduloveit.com
+ *
+ * js/init.js - Generator set-up: canvases, controls, nail placement.
+ *
+ * Copyright (C) 2026 Chanchal Sakarde
+ * Based on StringArtGenerator by dronperminov (https://github.com/dronperminov/StringArtGenerator)
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file
+ */
+
 StringArtGenerator.prototype.InitCanvas = function(canvas) {
     this.canvas = canvas
     this.ctx = this.canvas.getContext('2d')
@@ -160,31 +186,27 @@ StringArtGenerator.prototype.GetCircleNail = function(t) {
     return {x: x, y: y}
 }
 
+// Nails around a rectangle, spaced evenly and numbered in one continuous clockwise loop:
+// nail 1 at the top-right corner, down the right side, along the bottom, up the left side, along the top.
 StringArtGenerator.prototype.GetRectNail = function(angle, x0, y0, width, height) {
     let t = angle / (2 * Math.PI)
     let aspectRatio = width / height
-    let t1 = 0.5 / (1 + aspectRatio)
+    let t1 = 0.5 / (1 + aspectRatio)       // share of the perimeter taken by one vertical side
     let ts = [0, t1, 0.5, 0.5 + t1, 1]
-    let x, y
+    let left = x0 - width / 2, right = x0 + width / 2
+    let top = y0 - height / 2, bottom = y0 + height / 2
+    let lerp = (a, b, u) => a + (b - a) * u
 
-    if (t < ts[1]) {
-        x = x0 + width / 2
-        y = this.Interpolate(y0 - height / 2, y0 + height / 2, (t - ts[0]) / (ts[1] - ts[0]))
-    }
-    else if (t < ts[2]) {
-        x = this.Interpolate(x0 - width / 2, x0 + width / 2, (t - ts[1]) / (ts[2] - ts[1]))
-        y = y0 + height / 2
-    }
-    else if (t < ts[3]) {
-        x = x0 - width / 2
-        y = this.Interpolate(y0 + height / 2, y0 - height / 2, (t - ts[2]) / (ts[3] - ts[2]))
-    }
-    else {
-        x = this.Interpolate(x0 + width / 2, x0 - width / 2, (t - ts[3]) / (ts[4] - ts[3]))
-        y = y0 - height / 2
-    }
+    if (t < ts[1])
+        return { x: right, y: lerp(top, bottom, (t - ts[0]) / (ts[1] - ts[0])) }
 
-    return {x: x, y: y}
+    if (t < ts[2])
+        return { x: lerp(right, left, (t - ts[1]) / (ts[2] - ts[1])), y: bottom }
+
+    if (t < ts[3])
+        return { x: left, y: lerp(bottom, top, (t - ts[2]) / (ts[3] - ts[2])) }
+
+    return { x: lerp(left, right, (t - ts[3]) / (ts[4] - ts[3])), y: top }
 }
 
 StringArtGenerator.prototype.InitBorderNails = function(nailsCount) {
@@ -268,9 +290,12 @@ StringArtGenerator.prototype.InitGridNails = function(nailsCount) {
                 continue
             }
 
+            // Exact position kept for the printable template; the generator works on whole pixels
             nails.push({
                 x: Math.round(x),
-                y: Math.round(y)
+                y: Math.round(y),
+                fx: x,
+                fy: y
             })
         }
     }
@@ -306,7 +331,9 @@ StringArtGenerator.prototype.InitGridRandom = function(nailsCount) {
 
         nails.push({
             x: Math.round(x),
-            y: Math.round(y)
+            y: Math.round(y),
+            fx: x,
+            fy: y
         })
     }
 

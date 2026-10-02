@@ -1,3 +1,29 @@
+/*
+ * Custom Base Board String Art Portrait Webtool
+ * woodyouloveit.com · wooduloveit.com
+ *
+ * js/string_art_generator.js - String art generator core: generation loop, exports.
+ *
+ * Copyright (C) 2026 Chanchal Sakarde
+ * Based on StringArtGenerator by dronperminov (https://github.com/dronperminov/StringArtGenerator)
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file
+ */
+
 function StringArtGenerator(canvas) {
     this.InitCanvas(canvas)
     this.InitSelectButton()
@@ -294,6 +320,7 @@ StringArtGenerator.prototype.Generate = function() {
 
 StringArtGenerator.prototype.ToStringArt = function() {
     return JSON.stringify({
+        'about': BrandMetadata(),
         'nails': this.nails.map(p => ({ x: p.x, y: p.y })),
         'color': this.GetLineColor(),
         'background': this.backgroundColorBox.value,
@@ -302,7 +329,13 @@ StringArtGenerator.prototype.ToStringArt = function() {
 }
 
 StringArtGenerator.prototype.ToSVG = function() {
-    let svg = `<svg viewBox="0 0 ${this.width} ${this.height}" width="512" height="512" version="1.1" xmlns="http://www.w3.org/2000/svg">\n`
+    let footer = Math.round(this.width * 0.12)
+    let totalH = this.height + footer
+    let svg = `<?xml version="1.0" encoding="UTF-8"?>\n`
+    svg += `<!-- ${BRAND.tool} | ${BRAND.sitesLine} | ${BRAND.copyrightLine} | ${BRAND.licenseUrl} -->\n`
+    svg += `<svg viewBox="0 0 ${this.width} ${totalH}" width="512" height="${Math.round(512 * totalH / this.width)}" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n`
+    svg += `    <title>String art - ${BRAND.sitesLine}</title>\n`
+    svg += `    <desc>${BRAND.copyrightLine}</desc>\n`
 
     svg += `    ${this.GetOutlineSVG(this.backgroundColorBox.value)}\n`
 
@@ -316,6 +349,7 @@ StringArtGenerator.prototype.ToSVG = function() {
         svg += `    <path d="M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}" stroke-width="1" stroke="${this.GetLineColor()}" fill="none" />\n`
     }
 
+    svg += BrandFooterSVG(0, this.height, this.width, footer) + '\n'
     svg += '</svg>'
 
     return svg
@@ -335,61 +369,6 @@ StringArtGenerator.prototype.GetShapeName = function() {
     return names[this.formType] || this.formType
 }
 
-// Printable nail template: board outline + every nail with its number (1-based).
-// Print it at your board size, tape it on, and hammer a nail at every dot.
-StringArtGenerator.prototype.ToTemplate = function() {
-    let nails = this.nails
-    let n = nails.length
-    let isBorder = this.nailsModeBox.value == BORDER_MODE
-    let c = this.GetBoardCenter()
-
-    // Pick a font size from the nail spacing so neighbouring labels don't overlap
-    let fs = Math.max(1.2, Math.min(8, this.GetNailSpacing() * 0.85))
-    let nailR = Math.max(0.4, Math.min(NAIL_RADIUS, fs * 0.3))
-    let margin = isBorder ? fs * 3 + 6 : 6
-    let angles = isBorder ? this.GetNailOutwardAngles() : null
-
-    let vbX = -margin, vbY = -margin
-    let vbW = this.width + 2 * margin, vbH = this.height + 2 * margin
-    let r = (v) => Math.round(v * 100) / 100
-
-    let svg = `<svg viewBox="${r(vbX)} ${r(vbY)} ${r(vbW)} ${r(vbH)}" width="${r(vbW * 2)}" height="${r(vbH * 2)}" version="1.1" xmlns="http://www.w3.org/2000/svg">\n`
-    svg += `<rect x="${r(vbX)}" y="${r(vbY)}" width="${r(vbW)}" height="${r(vbH)}" fill="#fff" />\n`
-
-    // Board outline
-    svg += this.GetOutlineSVG('none', '#999', 0.3) + '\n'
-
-    // Centre mark helps with alignment on the board
-    svg += `<path d="M ${r(c.x - 4)} ${r(c.y)} L ${r(c.x + 4)} ${r(c.y)} M ${r(c.x)} ${r(c.y - 4)} L ${r(c.x)} ${r(c.y + 4)}" stroke="#999" stroke-width="0.3" />\n`
-
-    svg += `<g font-family="Arial, Helvetica, sans-serif" font-size="${r(fs)}" fill="#000">\n`
-
-    for (let i = 0; i < n; i++) {
-        let nail = { x: r(nails[i].fx ?? nails[i].x), y: r(nails[i].fy ?? nails[i].y) }
-        let label = i + 1
-        let color = i == 0 ? '#d00' : '#000'
-
-        svg += `<circle cx="${nail.x}" cy="${nail.y}" r="${r(nailR)}" fill="${color}" />`
-
-        if (isBorder) {
-            // Label points away from the board, flipped on the left half so it stays readable
-            let angle = angles[i]
-            let flip = angle > 90 || angle < -90
-            let rot = flip ? angle + 180 : angle
-            let off = nailR + fs * 0.4
-            let anchor = flip ? 'end' : 'start'
-            let dx = flip ? -off : off
-            svg += `<text transform="translate(${nail.x} ${nail.y}) rotate(${r(rot)})" x="${r(dx)}" y="${r(fs * 0.35)}" text-anchor="${anchor}" fill="${color}">${label}</text>\n`
-        }
-        else {
-            svg += `<text x="${r(nail.x + nailR + 0.3)}" y="${r(nail.y - nailR - 0.3)}" fill="${color}">${label}</text>\n`
-        }
-    }
-
-    svg += '</g>\n</svg>'
-    return svg
-}
-
 // Plain-text winding instructions using the same 1-based nail numbers as the template.
 StringArtGenerator.prototype.ToSequence = function() {
     let seq = this.sequence.map(i => i + 1)
@@ -397,6 +376,7 @@ StringArtGenerator.prototype.ToSequence = function() {
     let width = String(this.nails.length).length
     let txt = ''
 
+    txt += BrandTextHeader() + '\n\n'
     txt += 'String art winding sequence\n'
     txt += '===========================\n\n'
     txt += `Board shape:  ${this.GetShapeName()}\n`
@@ -416,6 +396,7 @@ StringArtGenerator.prototype.ToSequence = function() {
     }
 
     txt += `\nDone - tie off at nail ${seq[seq.length - 1]}.\n`
+    txt += `\n--\n${BRAND.sitesLine}\n${BRAND.copyrightLine}\n`
     return txt
 }
 
@@ -429,23 +410,24 @@ StringArtGenerator.prototype.Save = function() {
     }
     else if (type == 'png') {
         // Saves what you see: the art plus the nail numbers if they are switched on
+        // ...and a branded footer strip underneath
+        let footer = Math.round(this.canvas.width * 0.12)
         let out = document.createElement('canvas')
         out.width = this.canvas.width
-        out.height = this.canvas.height
+        out.height = this.canvas.height + footer
         let outCtx = out.getContext('2d')
+        outCtx.fillStyle = '#ffffff'
+        outCtx.fillRect(0, 0, out.width, out.height)
         outCtx.drawImage(this.canvas, 0, 0)
         if (this.nailNumbersBox.value != 'off')
             outCtx.drawImage(this.overlay, 0, 0)
+        DrawBrandFooter(outCtx, 0, this.canvas.height, out.width, footer, brandLogoImage)
         link.href = out.toDataURL()
         link.download = 'art.png'
     }
     else if (type == 'svg') {
         link.href = URL.createObjectURL(new Blob([this.ToSVG()], { type: 'image/svg+xml' }))
         link.download = 'art.svg'
-    }
-    else if (type == 'template') {
-        link.href = URL.createObjectURL(new Blob([this.ToTemplate()], { type: 'image/svg+xml' }))
-        link.download = 'nail-template.svg'
     }
     else if (type == 'sequence') {
         link.href = URL.createObjectURL(new Blob([this.ToSequence()], { type: 'text/plain' }))

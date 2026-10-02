@@ -1,12 +1,36 @@
 <!DOCTYPE html>
+<!--
+    Custom Base Board String Art Portrait Webtool
+    woodyouloveit.com · wooduloveit.com
+
+    Copyright (C) 2026 Chanchal Sakarde
+    Based on StringArtGenerator by dronperminov (https://github.com/dronperminov/StringArtGenerator)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+    https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file
+-->
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>String Art Generator</title>
-    <meta name="description" content="Turn any photo into string art. Circle, square, portrait, hexagon and oval boards, printable nail templates and winding sequences.">
+    <title>String Art Generator · woodyouloveit</title>
+    <meta name="description" content="Turn any photo into string art, or print an actual-size board template with numbered nails. Circle, square, portrait, hexagon and oval boards. By woodyouloveit.com.">
+    <meta name="author" content="Chanchal Sakarde">
+    <meta name="copyright" content="© 2026 Chanchal Sakarde, GPL-3.0">
+    <link rel="license" href="https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file">
     <meta name="theme-color" content="#1B3A32">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231B3A32'/><g stroke='%23F2B134' stroke-width='1.2'><path d='M6 16 L26 9 M6 16 L26 23 M16 5 L16 27 M8 9 L24 23 M8 23 L24 9'/></g></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23ffffff'/><path d='M16 27 C6 20 3 14.5 3 10.5 C3 6.9 5.8 4.5 9 4.5 C11.9 4.5 14.4 6.3 16 9 C17.6 6.3 20.1 4.5 23 4.5 C26.2 4.5 29 6.9 29 10.5 C29 14.5 26 20 16 27 Z' fill='%23E7004E'/></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap">
@@ -17,16 +41,27 @@
 
     <header class="topbar">
         <div class="brand">
-            <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
-                <g stroke="currentColor" stroke-width="1.2" fill="none"><path d="M6 16 L26 9 M6 16 L26 23 M16 5 L16 27 M8 9 L24 23 M8 23 L24 9"/></g>
-            </svg>
+            <a class="brand-logo" href="https://woodyouloveit.com" target="_blank" rel="noopener" title="woodyouloveit.com">
+                <img src="docs/logo.png" alt="woodyouloveit" width="911" height="151">
+            </a>
+            <span class="brand-divider" aria-hidden="true"></span>
             <h1>String Art Generator</h1>
         </div>
-        <button type="button" class="btn btn-accent" id="select-btn">Choose image</button>
+        <div class="topbar-right">
+            <span class="topbar-sites"><a href="https://woodyouloveit.com" target="_blank" rel="noopener">woodyouloveit.com</a> · <a href="https://wooduloveit.com" target="_blank" rel="noopener">wooduloveit.com</a></span>
+            <button type="button" class="btn btn-accent" id="select-btn">Choose image</button>
+        </div>
     </header>
+
+    <!-- ============ Mode ============ -->
+    <div class="mode-tabs" role="tablist" aria-label="Mode">
+        <button type="button" role="tab" id="tab-art" aria-selected="true" aria-controls="panel-art">String art</button>
+        <button type="button" role="tab" id="tab-template" aria-selected="false" aria-controls="panel-template">Board template</button>
+    </div>
 
     <!-- ============ Settings ============ -->
     <aside class="sidebar" id="controls-box" aria-label="Settings">
+        <div class="panel" id="panel-art" role="tabpanel" aria-labelledby="tab-art">
         <div class="sidebar-scroll">
 
             <section class="group">
@@ -136,6 +171,92 @@
             <input type="button" class="btn btn-ghost" id="reset-btn" value="Reset" disabled>
             <div id="status-box" hidden></div>
         </div>
+        </div>
+
+        <!-- ============ Board template: no photo needed ============ -->
+        <div class="panel" id="panel-template" role="tabpanel" aria-labelledby="tab-template" hidden>
+            <div class="sidebar-scroll">
+                <p class="panel-intro">Print an actual-size template with every nail position numbered. Tape it to your board, hammer a nail on each dot, then tear the paper away.</p>
+
+                <section class="group" id="tpl-source-group" hidden>
+                    <h2>Nails from</h2>
+                    <div class="segmented" id="tpl-source" role="group" aria-label="Nails from">
+                        <button type="button" data-value="custom">Custom board</button>
+                        <button type="button" data-value="art">Current string art</button>
+                    </div>
+                    <p class="note">"Current string art" uses the exact nails of the art on the String art tab, including grid and random layouts.</p>
+                </section>
+
+                <section class="group">
+                    <h2>Board</h2>
+                    <div id="tpl-shapes-slot"></div>
+                </section>
+
+                <section class="group">
+                    <h2>Nails</h2>
+                    <div class="field">
+                        <span class="field-label" id="tpl-layout-label">Layout</span>
+                        <div class="segmented" id="tpl-layout" role="group" aria-labelledby="tpl-layout-label">
+                            <button type="button" data-value="border">Edge</button>
+                            <button type="button" data-value="grid">Grid</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="tpl-count" class="field-label">Number of nails</label>
+                        <input type="number" id="tpl-count" value="250" min="20" max="1000">
+                    </div>
+                    <p class="note">Use the same shape, layout and number of nails on the String art tab and the numbers will match this template.</p>
+                </section>
+
+                <section class="group">
+                    <h2>Size</h2>
+                    <div class="field">
+                        <span class="field-label" id="tpl-unit-label">Units</span>
+                        <div class="segmented" id="tpl-unit" role="group" aria-labelledby="tpl-unit-label">
+                            <button type="button" data-value="mm">mm</button>
+                            <button type="button" data-value="cm">cm</button>
+                            <button type="button" data-value="in">inches</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="tpl-size" class="field-label">Board size, longest side (<span class="tpl-unit-label">mm</span>)</label>
+                        <input type="number" id="tpl-size" value="400" min="0">
+                    </div>
+                    <div class="field">
+                        <label for="tpl-inset" class="field-label">Nails from board edge (<span class="tpl-unit-label">mm</span>)</label>
+                        <input type="number" id="tpl-inset" value="10" min="0">
+                    </div>
+                    <p class="note" id="tpl-dims"></p>
+                </section>
+
+                <section class="group">
+                    <h2>Pin numbers</h2>
+                    <div class="segmented" id="tpl-step" role="group" aria-label="Pin numbers">
+                        <button type="button" data-value="1">Every nail</button>
+                        <button type="button" data-value="5">Every 5</button>
+                        <button type="button" data-value="10">Every 10</button>
+                    </div>
+                </section>
+
+                <section class="group">
+                    <h2>Print on</h2>
+                    <div class="segmented" id="tpl-paper" role="group" aria-label="Paper">
+                        <button type="button" data-value="sheet">One sheet</button>
+                        <button type="button" data-value="a4">A4</button>
+                        <button type="button" data-value="a3">A3</button>
+                        <button type="button" data-value="letter">Letter</button>
+                    </div>
+                    <p class="note">"One sheet" is a single actual-size page for a print shop. A4, A3 and Letter split the PDF into pages to tape together. SVG and PNG are always one actual-size sheet.</p>
+                </section>
+            </div>
+
+            <div class="actions">
+                <button type="button" class="btn btn-accent btn-big" id="tpl-pdf">Download PDF</button>
+                <button type="button" class="btn btn-ghost" id="tpl-svg">SVG</button>
+                <button type="button" class="btn btn-ghost" id="tpl-png">PNG</button>
+            </div>
+            <p class="busy" id="tpl-busy" aria-live="polite"></p>
+        </div>
     </aside>
 
     <!-- ============ Cutting-mat stage ============ -->
@@ -143,6 +264,7 @@
         <div class="ruler ruler-x" aria-hidden="true"></div>
         <div class="ruler ruler-y" aria-hidden="true"></div>
 
+        <div class="stage-art" id="stage-art">
         <div class="view-toggle" role="group" aria-label="View">
             <span class="view-toggle-pill" aria-hidden="true"></span>
             <button type="button" id="view-original" aria-pressed="false" disabled>Original</button>
@@ -184,13 +306,25 @@
             <span class="export-label">Download</span>
             <button type="button" class="btn btn-chip" data-save="png">PNG image</button>
             <button type="button" class="btn btn-chip" data-save="svg">SVG vector</button>
-            <button type="button" class="btn btn-chip" data-save="template">Nail template</button>
+            <button type="button" class="btn btn-chip" data-save="template">Board template…</button>
             <button type="button" class="btn btn-chip" data-save="sequence">Winding sequence</button>
             <button type="button" class="btn btn-chip" data-save="stringart">Project file</button>
             <input type="button" id="save-btn" value="Save" hidden>
         </div>
 
-        <p class="privacy">Runs entirely in your browser. Your photo is never uploaded.</p>
+        </div>
+
+        <div class="stage-template" id="stage-template" hidden>
+            <div class="template-preview" id="template-preview" aria-label="Template preview"></div>
+            <div class="info" id="template-info" aria-live="polite"></div>
+        </div>
+
+        <footer class="site-footer">
+            <a class="footer-logo" href="https://woodyouloveit.com" target="_blank" rel="noopener"><img src="docs/logo.png" alt="woodyouloveit" width="911" height="151"></a>
+            <span><a href="https://woodyouloveit.com" target="_blank" rel="noopener">woodyouloveit.com</a> · <a href="https://wooduloveit.com" target="_blank" rel="noopener">wooduloveit.com</a></span>
+            <span>© 2026 Chanchal Sakarde · <a href="https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file" target="_blank" rel="noopener">GPL-3.0 License</a> · <a href="https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool" target="_blank" rel="noopener">Source</a></span>
+            <span class="footer-privacy">Runs entirely in your browser. Your photo is never uploaded.</span>
+        </footer>
     </main>
 
     <div class="drag-drop" id="drag-drop-box" style="display: none">
@@ -198,6 +332,7 @@
     </div>
 </div>
 
+<script src="js/brand.js"></script>
 <script src="js/constants.js"></script>
 <script src="js/string_art_generator.js"></script>
 <script src="js/init.js"></script>
@@ -209,5 +344,6 @@
     let generator = new StringArtGenerator(canvas)
 </script>
 <script src="js/ui.js"></script>
+<script src="js/template.js"></script>
 </body>
 </html>

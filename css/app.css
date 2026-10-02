@@ -1,3 +1,28 @@
+/*
+ * Custom Base Board String Art Portrait Webtool
+ * woodyouloveit.com · wooduloveit.com
+ *
+ * css/app.css - Page styles ("cutting mat" workbench theme).
+ *
+ * Copyright (C) 2026 Chanchal Sakarde
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file
+ */
+
 /* String Art Generator — "cutting mat" workbench theme */
 
 :root {
@@ -52,9 +77,10 @@ button, input, select { font: inherit; color: inherit; }
     height: 100vh;
     display: grid;
     grid-template-columns: var(--sidebar) 1fr;
-    grid-template-rows: 60px 1fr;
+    grid-template-rows: 60px auto 1fr;
     grid-template-areas:
         "top top"
+        "tabs stage"
         "side stage";
 }
 
@@ -63,8 +89,10 @@ button, input, select { font: inherit; color: inherit; }
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 16px;
     padding: 0 20px;
-    background: var(--mat-deep);
+    background: var(--paper);
+    color: var(--ink);
     border-bottom: 1px solid rgba(0, 0, 0, 0.25);
 }
 
@@ -74,15 +102,26 @@ button, input, select { font: inherit; color: inherit; }
     gap: 12px;
 }
 
-.brand-mark {
-    width: 28px;
-    height: 28px;
-    color: var(--marigold);
+.brand-logo {
+    display: block;
+    line-height: 0;
+}
+
+.brand-logo img {
+    height: 26px;
+    width: auto;
+}
+
+.brand-divider {
+    width: 1px;
+    height: 26px;
+    background: rgba(16, 32, 28, 0.2);
 }
 
 .brand h1 {
     margin: 0;
-    font-size: 21px;
+    font-size: 19px;
+    color: var(--ink);
     font-weight: 800;
     font-stretch: 125%;
     font-variation-settings: "wdth" 125;
@@ -324,7 +363,7 @@ input[type="range"]:disabled { cursor: not-allowed; }
     stroke-linejoin: round;
 }
 
-.shape-chip:hover:not(:disabled) { color: var(--on-dark); border-color: var(--field-border); }
+.shape-chip:not([aria-pressed="true"]):hover:not(:disabled) { color: var(--on-dark); border-color: var(--field-border); }
 
 .shape-chip[aria-pressed="true"] {
     color: var(--marigold);
@@ -356,7 +395,7 @@ input[type="range"]:disabled { cursor: not-allowed; }
     transition: background-color 150ms, color 150ms;
 }
 
-.segmented button:hover:not(:disabled) { color: var(--on-dark); }
+.segmented button:not([aria-pressed="true"]):hover:not(:disabled) { color: var(--on-dark); }
 
 .segmented button[aria-pressed="true"] { background: var(--on-dark); color: var(--ink); }
 
@@ -705,14 +744,36 @@ input[type="range"]:disabled { cursor: not-allowed; }
     from { opacity: 0; transform: translateY(10px); }
 }
 
-.privacy {
-    text-align: center;
-    margin: auto 0 0;
-    padding-top: 6px;
+/* ---------- Footer: brand, copyright, licence ---------- */
+
+.site-footer {
+    margin-top: auto;
+    padding-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px 16px;
     font-size: 13px;
     color: var(--on-dark-muted);
+    text-align: center;
     flex-shrink: 0;
 }
+
+.site-footer a { color: var(--on-dark); text-decoration: none; }
+.site-footer a:hover { color: var(--marigold); text-decoration: underline; }
+
+.footer-logo {
+    display: inline-block;
+    line-height: 0;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: #ffffff;
+}
+
+.footer-logo img { height: 13px; width: auto; }
+
+.footer-privacy { flex-basis: 100%; font-size: 12px; }
 
 /* Drag and drop */
 .drag-drop {
@@ -741,12 +802,15 @@ input[type="range"]:disabled { cursor: not-allowed; }
         height: auto;
         min-height: 100vh;
         grid-template-columns: 1fr;
-        grid-template-rows: 56px auto auto;
+        grid-template-rows: 56px auto auto auto;
         grid-template-areas:
             "top"
+            "tabs"
             "stage"
             "side";
     }
+
+    .mode-tabs { border-right: 0; padding-top: 4px; }
 
     .brand h1 { font-size: 17px; }
 
@@ -771,7 +835,6 @@ input[type="range"]:disabled { cursor: not-allowed; }
         box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.25);
     }
 
-    .privacy { margin-top: 4px; }
 }
 
 /* ---------- Reduced motion: crossfade instead of flipping ---------- */
@@ -787,3 +850,156 @@ input[type="range"]:disabled { cursor: not-allowed; }
     .empty-art .line.draw { animation: none; stroke-dashoffset: 0; }
     .export { animation: none; }
 }
+
+
+/* ---------- Header extras ---------- */
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.topbar-sites {
+    font-size: 13px;
+    color: #43524D;
+}
+
+.topbar-sites a { color: inherit; text-decoration: none; font-weight: 600; }
+.topbar-sites a:hover { color: var(--ink); text-decoration: underline; }
+
+/* ---------- Mode tabs ---------- */
+
+.mode-tabs {
+    grid-area: tabs;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 12px 20px 0;
+    gap: 4px;
+    background: var(--mat-deep);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.mode-tabs button {
+    position: relative;
+    border: 0;
+    background: transparent;
+    padding: 10px 6px 12px;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--on-dark-muted);
+    cursor: pointer;
+    transition: color 150ms;
+}
+
+.mode-tabs button::after {
+    content: "";
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: -1px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--marigold);
+    transform: scaleX(0);
+    transition: transform 300ms var(--ease);
+}
+
+.mode-tabs button:hover { color: var(--on-dark); }
+.mode-tabs button[aria-selected="true"] { color: var(--on-dark); }
+.mode-tabs button[aria-selected="true"]::after { transform: scaleX(1); }
+
+.panel {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel[hidden] { display: none; }
+
+.panel-intro {
+    margin: 14px 0 0;
+    font-size: 14px;
+    color: var(--on-dark-muted);
+}
+
+.note {
+    margin: 0 0 12px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--on-dark-muted);
+}
+
+.busy {
+    margin: 0;
+    padding: 0 20px 12px;
+    font-size: 13px;
+    color: var(--marigold);
+    background: var(--mat-deep);
+}
+
+.busy:empty { display: none; }
+
+#panel-template .segmented button { font-size: 12.5px; }
+
+/* ---------- Stage sections ---------- */
+
+.stage-art, .stage-template {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+.stage-art[hidden], .stage-template[hidden] { display: none; }
+
+.stage-template {
+    flex: 1;
+    min-height: 0;
+    animation: rise 420ms var(--ease) both;
+}
+
+.template-preview {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.template-preview svg {
+    display: block;
+    border-radius: 2px;
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.18),
+        0 22px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.info .warn {
+    flex-basis: 100%;
+    color: var(--marigold);
+    font-weight: 600;
+}
+
+@media (max-width: 860px) {
+    .topbar-sites { display: none; }
+    .brand-logo img { height: 20px; }
+    .brand-divider { height: 20px; }
+    .brand h1 { font-size: 15px; }
+    .template-preview { min-height: 0; height: 72vh; }
+    .stage-template { flex: none; }
+}
+
+@media (max-width: 480px) {
+    .brand-divider, .brand h1 { display: none; }
+}
+
+/* Template actions: the PDF button gets its own row, SVG / PNG share the next */
+#panel-template .actions { flex-wrap: wrap; }
+#panel-template .actions .btn-big { flex-basis: 100%; }
+#panel-template .actions .btn-ghost { flex: 1; }
