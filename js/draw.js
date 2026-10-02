@@ -16,39 +16,39 @@ StringArtGenerator.prototype.LimitPixel = function(value) {
     return Math.round(value)
 }
 
-StringArtGenerator.prototype.DrawForm = function() {
+StringArtGenerator.prototype.DrawForm = function(ctx = this.ctx) {
     let formType = this.formTypeBox.value
 
-    this.ctx.strokeStyle = BORDER_COLOR
-    this.ctx.beginPath()
+    ctx.strokeStyle = BORDER_COLOR
+    ctx.beginPath()
 
     if (formType == CIRCLE_FORM) {
-        this.ctx.arc(this.x0, this.y0, this.radius + PADDING / 2, 0, Math.PI * 2)
+        ctx.arc(this.x0, this.y0, this.radius + PADDING / 2, 0, Math.PI * 2)
     }
     else if (formType == RECT_FORM) {
-        this.ctx.rect(0, 0, this.width, this.height)
+        ctx.rect(0, 0, this.width, this.height)
     }
     else if (formType == ALBUM_FORM) {
         let height = this.width / Math.sqrt(2)
-        this.ctx.rect(0, (this.height - height) / 2, this.width, height)
+        ctx.rect(0, (this.height - height) / 2, this.width, height)
     }
     else if (formType == PORTRAIT_FORM) {
         let width = this.height / Math.sqrt(2)
-        this.ctx.rect((this.width - width) / 2, 0, width, this.height)
+        ctx.rect((this.width - width) / 2, 0, width, this.height)
     }
     else if (formType == IMAGE_FORM) {
-        this.ctx.rect(0, 0, this.imgWidth, this.imgHeight)
+        ctx.rect(0, 0, this.imgWidth, this.imgHeight)
     }
     else if (this.IsOutlineForm(formType)) {
         let outline = this.GetShapeOutline(PADDING / 2, formType)
-        this.ctx.moveTo(outline[0].x, outline[0].y)
+        ctx.moveTo(outline[0].x, outline[0].y)
         for (let i = 1; i < outline.length; i++)
-            this.ctx.lineTo(outline[i].x, outline[i].y)
-        this.ctx.closePath()
+            ctx.lineTo(outline[i].x, outline[i].y)
+        ctx.closePath()
     }
 
-    this.ctx.fillStyle = this.backgroundColorBox.value
-    this.ctx.fill()
+    ctx.fillStyle = this.backgroundColorBox.value
+    ctx.fill()
 }
 
 StringArtGenerator.prototype.DrawGrayScale = function() {
@@ -86,6 +86,24 @@ StringArtGenerator.prototype.DrawLoadedImage = function() {
     this.DrawGrayScale()
     this.ctx.stroke()
     this.ctx.restore()
+
+    this.DrawOriginal()
+}
+
+// The uploaded photo in colour, positioned and clipped exactly like the board (back of the flip card)
+StringArtGenerator.prototype.DrawOriginal = function() {
+    if (!this.origCtx || !this.image)
+        return
+
+    let ctx = this.origCtx
+    ctx.clearRect(0, 0, this.width, this.height)
+    ctx.save()
+    this.DrawForm(ctx)
+    ctx.clip()
+    ctx.drawImage(this.image, this.imgX, this.imgY, this.imgWidth * this.imgScale, this.imgHeight * this.imgScale)
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)'
+    ctx.stroke()
+    ctx.restore()
 }
 
 StringArtGenerator.prototype.DrawNails = function() {

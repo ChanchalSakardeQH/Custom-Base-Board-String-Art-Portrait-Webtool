@@ -8,8 +8,6 @@ StringArtGenerator.prototype.InitCanvas = function(canvas) {
     this.canvas.width = this.width * this.dpr
     this.canvas.height = this.height * this.dpr
     this.ctx.scale(this.dpr, this.dpr)
-    this.canvas.style.width = this.width + "px"
-    this.canvas.style.height = this.height + "px"
 
     this.fakeCanvas = document.createElement('canvas')
     this.fakeCanvas.width = this.width * this.dpr
@@ -21,10 +19,15 @@ StringArtGenerator.prototype.InitCanvas = function(canvas) {
     this.overlay = document.getElementById('overlay')
     this.overlay.width = this.width * this.dpr
     this.overlay.height = this.height * this.dpr
-    this.overlay.style.width = this.width + "px"
-    this.overlay.style.height = this.height + "px"
     this.overlayCtx = this.overlay.getContext('2d')
     this.overlayCtx.scale(this.dpr, this.dpr)
+
+    // Back of the flip card: the uploaded photo in colour, cropped exactly like the board
+    this.origCanvas = document.getElementById('original')
+    this.origCanvas.width = this.width * this.dpr
+    this.origCanvas.height = this.height * this.dpr
+    this.origCtx = this.origCanvas.getContext('2d')
+    this.origCtx.scale(this.dpr, this.dpr)
 
     this.pixelCanvas = document.createElement('canvas')
     this.pixelCanvas.width = this.width
@@ -126,16 +129,19 @@ StringArtGenerator.prototype.InitSave = function() {
 }
 
 StringArtGenerator.prototype.InitEvents = function() {
-    this.canvas.addEventListener('mousedown', (e) => this.MouseDown(e))
-    this.canvas.addEventListener('mousemove', (e) => this.MouseMove(e))
-    this.canvas.addEventListener('mouseup', (e) => this.MouseUp(e))
-    this.canvas.addEventListener('mouseleave', (e) => this.MouseUp(e))
-    this.canvas.addEventListener('wheel', (e) => this.MouseWheel(e), { passive: false })
-
     this.touches = []
-    this.canvas.addEventListener('touchstart', (e) => { this.TouchStart(e) }, { passive: false })
-    this.canvas.addEventListener('touchmove', (e) => { this.TouchMove(e) }, { passive: false })
-    this.canvas.addEventListener('touchend', (e) => { this.TouchEnd(e) })
+
+    for (let target of [this.canvas, this.origCanvas]) {
+        target.addEventListener('mousedown', (e) => this.MouseDown(e))
+        target.addEventListener('mousemove', (e) => this.MouseMove(e))
+        target.addEventListener('mouseup', (e) => this.MouseUp(e))
+        target.addEventListener('mouseleave', (e) => this.MouseUp(e))
+        target.addEventListener('wheel', (e) => this.MouseWheel(e), { passive: false })
+
+        target.addEventListener('touchstart', (e) => { this.TouchStart(e) }, { passive: false })
+        target.addEventListener('touchmove', (e) => { this.TouchMove(e) }, { passive: false })
+        target.addEventListener('touchend', (e) => { this.TouchEnd(e) })
+    }
 
     let generator = document.getElementById('generator-box')
     generator.addEventListener('dragover', (e) => this.DragOver(e))

@@ -17,7 +17,18 @@ StringArtGenerator.prototype.NormalizePoint = function() {
 }
 
 StringArtGenerator.prototype.TouchToPoint = function(touch) {
-    return { x: Math.round(touch.clientX), y: Math.round(touch.clientY) }
+    let rect = this.canvas.getBoundingClientRect()
+    let k = this.width / rect.width
+    return { x: Math.round((touch.clientX - rect.left) * k), y: Math.round((touch.clientY - rect.top) * k) }
+}
+
+// Pointer position in canvas units. The board is scaled by CSS, so screen pixels and canvas units can differ.
+StringArtGenerator.prototype.GetEventPoint = function(e) {
+    if (e._point)
+        return e._point
+
+    let k = this.width / e.target.clientWidth
+    return { x: e.offsetX * k, y: e.offsetY * k }
 }
 
 StringArtGenerator.prototype.GetPointDistance = function(p1, p2) {
@@ -32,9 +43,10 @@ StringArtGenerator.prototype.MaxAbs = function(a, b) {
 }
 
 StringArtGenerator.prototype.MouseDown = function(e) {
+    let point = this.GetEventPoint(e)
     this.isPressed = true
-    this.prevX = e.offsetX
-    this.prevY = e.offsetY
+    this.prevX = point.x
+    this.prevY = point.y
     e.preventDefault()
 }
 
@@ -44,14 +56,15 @@ StringArtGenerator.prototype.MouseMove = function(e) {
     if (!this.isPressed || this.isGenerating || this.isLineDrawing)
         return
 
-    let dx = e.offsetX - this.prevX
-    let dy = e.offsetY - this.prevY
+    let point = this.GetEventPoint(e)
+    let dx = point.x - this.prevX
+    let dy = point.y - this.prevY
 
     this.imgX += dx
     this.imgY += dy
 
-    this.prevX = e.offsetX
-    this.prevY = e.offsetY
+    this.prevX = point.x
+    this.prevY = point.y
 
     this.NormalizePoint()
     this.DrawLoadedImage()
@@ -71,7 +84,8 @@ StringArtGenerator.prototype.MouseWheel = function(e) {
     let scaleIndex = SCALES.indexOf(this.imgScale) - Math.sign(e.deltaY)
     let scale = SCALES[Math.max(0, Math.min(SCALES.length - 1, scaleIndex))]
 
-    this.SetScale(scale, e.offsetX, e.offsetY)
+    let point = this.GetEventPoint(e)
+    this.SetScale(scale, point.x, point.y)
     this.NormalizePoint()
     this.DrawLoadedImage()
 }
@@ -82,6 +96,10 @@ StringArtGenerator.prototype.DragOver = function(e) {
 }
 
 StringArtGenerator.prototype.DragLeave = function(e) {
+    // Moving between elements inside the page also fires dragleave; only hide when actually leaving
+    if (e.relatedTarget && document.getElementById('generator-box').contains(e.relatedTarget))
+        return
+
     this.dragDropBox.style.display = 'none'
     e.preventDefault()
 }
@@ -105,9 +123,7 @@ StringArtGenerator.prototype.TouchStart = function(e) {
     this.touches = []
 
     if (e.targetTouches.length == 1) {
-        let point = this.TouchToPoint(e.targetTouches[0])
-        e.offsetX = point.x
-        e.offsetY = point.y
+        e._point = this.TouchToPoint(e.targetTouches[0])
         this.MouseDown(e)
     }
     else if (e.targetTouches.length == 2) {
@@ -123,9 +139,7 @@ StringArtGenerator.prototype.TouchMove = function(e) {
     e.preventDefault()
 
     if (e.targetTouches.length == 1) {
-        let point = this.TouchToPoint(e.targetTouches[0])
-        e.offsetX = point.x
-        e.offsetY = point.y
+        e._point = this.TouchToPoint(e.targetTouches[0])
         this.MouseMove(e)
         return
     }

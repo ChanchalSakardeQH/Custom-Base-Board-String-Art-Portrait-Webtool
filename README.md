@@ -1,6 +1,10 @@
-# Custom Base Board String Art Webtool
+# String Art Generator
 
 Turn any photo into string art — right in your browser. Choose a circle, square, landscape, portrait, hexagon or oval board, generate the art, then download a **printable numbered nail template** and the **winding sequence** to build it for real.
+
+![Generator in action](examples/ "Generator in action")
+
+**Live demo:** `[String Art Generator](https://chanchalsakardeqh.github.io/Custom-Base-Board-String-Art-Portrait-Webtool/)`
 
 ## Features
 
@@ -8,6 +12,8 @@ Turn any photo into string art — right in your browser. Choose a circle, squar
 * Board shapes: **Circle**, **Square**, **Landscape**, **Portrait** (A-series 1:√2 ratio), **Hexagon** (flat top or pointy top), **Oval** (horizontal or vertical, 1:√2), or **Match image**.
   * Hexagon nails are shared out side by side so every corner gets a nail. Use a nail count that's a multiple of 6 (e.g. 240 or 252) for perfectly even spacing.
   * Oval nails are spaced evenly along the curve, not by angle, so they don't bunch up at the narrow ends.
+* **Full-page workbench interface**: settings on the left, the board on a cutting-mat stage, and a progress thread with live stats while the art is drawn. On phones the board comes first and the Generate button stays pinned to the bottom of the screen.
+* **Original ⇄ String art flip**: the board is a two-sided card. Flip it with the toggle above the board (or press **F**) to compare your photo, cropped exactly like the board, with the generated art. You can zoom and position the photo on either side. If your system is set to reduce motion, the flip becomes a crossfade.
 * **Show nail numbers** on screen: every nail, every 5th or every 10th, with nail 1 in red. Handy for checking the layout before generating and for following the winding sequence. The numbers sit on a separate layer, so they never affect the generated art; PNG export includes them when they're switched on.
 * Nail layouts: along the edge, grid, or random.
 * Exports:
@@ -75,6 +81,8 @@ Open `index.html` directly in a browser, or serve the folder:
 python3 -m http.server 8000
 # then open http://localhost:8000
 ```
+
+## Examples
 
 <table>
     <tr>

@@ -4,155 +4,210 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>String Art Generator</title>
-    <meta name="description" content="Turn any photo into string art. Square, circle, landscape and portrait boards, printable nail templates and winding sequences.">
-    <link rel="stylesheet" type="text/css" href="css/controls.css">
-    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <meta name="description" content="Turn any photo into string art. Circle, square, portrait, hexagon and oval boards, printable nail templates and winding sequences.">
+    <meta name="theme-color" content="#1B3A32">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231B3A32'/><g stroke='%23F2B134' stroke-width='1.2'><path d='M6 16 L26 9 M6 16 L26 23 M16 5 L16 27 M8 9 L24 23 M8 23 L24 9'/></g></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap">
+    <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
-    <h1>String Art Generator</h1>
-    <div class="generator" id="generator-box">
-        <div class="drag-drop" id="drag-drop-box" style="display: none">
-            <div class="drag-drop-table">
-                <div>Drop the file to load the image</div>
+<div class="app" id="generator-box">
+
+    <header class="topbar">
+        <div class="brand">
+            <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+                <g stroke="currentColor" stroke-width="1.2" fill="none"><path d="M6 16 L26 9 M6 16 L26 23 M16 5 L16 27 M8 9 L24 23 M8 23 L24 9"/></g>
+            </svg>
+            <h1>String Art Generator</h1>
+        </div>
+        <button type="button" class="btn btn-accent" id="select-btn">Choose image</button>
+    </header>
+
+    <!-- ============ Settings ============ -->
+    <aside class="sidebar" id="controls-box" aria-label="Settings">
+        <div class="sidebar-scroll">
+
+            <section class="group">
+                <h2>Board</h2>
+                <select id="form-type-box" class="hidden-select" disabled tabindex="-1" aria-hidden="true">
+                    <option value="circle" selected>Circle</option>
+                    <option value="rect">Square</option>
+                    <option value="album">Landscape</option>
+                    <option value="portrait">Portrait</option>
+                    <option value="hexagon">Hexagon (flat top)</option>
+                    <option value="hexagon-pointy">Hexagon (pointy top)</option>
+                    <option value="oval-horizontal">Oval (horizontal)</option>
+                    <option value="oval-vertical">Oval (vertical)</option>
+                    <option value="image">Match image</option>
+                </select>
+                <div class="shape-grid" data-chips-for="form-type-box" role="group" aria-label="Board shape">
+                    <button type="button" class="shape-chip" data-value="circle"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/></svg><span>Circle</span></button>
+                    <button type="button" class="shape-chip" data-value="rect"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17"/></svg><span>Square</span></button>
+                    <button type="button" class="shape-chip" data-value="album"><svg viewBox="0 0 24 24"><rect x="2.5" y="5.3" width="19" height="13.4"/></svg><span>Landscape</span></button>
+                    <button type="button" class="shape-chip" data-value="portrait"><svg viewBox="0 0 24 24"><rect x="5.3" y="2.5" width="13.4" height="19"/></svg><span>Portrait</span></button>
+                    <button type="button" class="shape-chip" data-value="hexagon"><svg viewBox="0 0 24 24"><polygon points="21.5,12 16.75,20.2 7.25,20.2 2.5,12 7.25,3.8 16.75,3.8"/></svg><span>Hexagon</span></button>
+                    <button type="button" class="shape-chip" data-value="hexagon-pointy"><svg viewBox="0 0 24 24"><polygon points="12,2.5 20.2,7.25 20.2,16.75 12,21.5 3.8,16.75 3.8,7.25"/></svg><span>Hexagon, tall</span></button>
+                    <button type="button" class="shape-chip" data-value="oval-horizontal"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9.5" ry="6.7"/></svg><span>Oval, wide</span></button>
+                    <button type="button" class="shape-chip" data-value="oval-vertical"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="6.7" ry="9.5"/></svg><span>Oval, tall</span></button>
+                    <button type="button" class="shape-chip" data-value="image"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14"/><path d="M3 16 L9 10.5 L13.5 14.5 L16 12.5 L21 17"/></svg><span>Match photo</span></button>
+                </div>
+            </section>
+
+            <section class="group">
+                <h2>Photo</h2>
+                <div class="field">
+                    <div class="field-row"><label for="contrast-box">Contrast</label><output id="contrast-value">0</output></div>
+                    <input type="range" id="contrast-box" value="0" min="-100" max="100" step="5" disabled>
+                </div>
+                <div class="field">
+                    <div class="field-row"><label for="brightness-box">Brightness</label><output id="brightness-value">0</output></div>
+                    <input type="range" id="brightness-box" value="0" min="-100" max="100" step="5" disabled>
+                </div>
+                <label class="check">
+                    <input type="checkbox" id="invert-box" disabled>
+                    <span class="check-box" aria-hidden="true"></span>
+                    <span>Invert brightness</span>
+                </label>
+            </section>
+
+            <section class="group">
+                <h2>Nails</h2>
+                <div class="field">
+                    <span class="field-label" id="nails-mode-label">Layout</span>
+                    <select id="nails-mode-box" class="hidden-select" disabled tabindex="-1" aria-hidden="true">
+                        <option value="border" selected>Along the edge</option>
+                        <option value="grid">Grid</option>
+                        <option value="random">Random</option>
+                    </select>
+                    <div class="segmented" data-chips-for="nails-mode-box" role="group" aria-labelledby="nails-mode-label">
+                        <button type="button" data-value="border">Edge</button>
+                        <button type="button" data-value="grid">Grid</button>
+                        <button type="button" data-value="random">Random</button>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="nails-count-box" class="field-label">Number of nails</label>
+                    <input type="number" id="nails-count-box" value="250" min="50" max="1000" disabled>
+                </div>
+                <div class="field">
+                    <span class="field-label" id="nail-numbers-label">Show nail numbers</span>
+                    <select id="nail-numbers-box" class="hidden-select" disabled tabindex="-1" aria-hidden="true">
+                        <option value="off" selected>Off</option>
+                        <option value="all">Every nail</option>
+                        <option value="5">Every 5th nail</option>
+                        <option value="10">Every 10th nail</option>
+                    </select>
+                    <div class="segmented" data-chips-for="nail-numbers-box" role="group" aria-labelledby="nail-numbers-label">
+                        <button type="button" data-value="off">Off</button>
+                        <button type="button" data-value="all">All</button>
+                        <button type="button" data-value="5">Every 5</button>
+                        <button type="button" data-value="10">Every 10</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="group">
+                <h2>Thread</h2>
+                <div class="field">
+                    <label for="lines-count-box" class="field-label">Number of lines</label>
+                    <input type="number" id="lines-count-box" value="2000" min="100" max="10000" disabled>
+                </div>
+                <div class="field">
+                    <div class="field-row"><label for="lines-weight-box">Line opacity</label><output id="lines-weight-value">10%</output></div>
+                    <input type="range" id="lines-weight-box" value="10" min="1" max="100" disabled>
+                </div>
+                <div class="swatches">
+                    <label class="swatch">
+                        <input type="color" id="lines-color-box" value="#000000" disabled>
+                        <span>Thread</span>
+                    </label>
+                    <label class="swatch">
+                        <input type="color" id="background-color-box" value="#ffffff" disabled>
+                        <span>Board</span>
+                    </label>
+                </div>
+            </section>
+        </div>
+
+        <div class="actions">
+            <input type="button" class="btn btn-accent btn-big" id="generate-btn" value="Generate" disabled>
+            <input type="button" class="btn btn-ghost" id="reset-btn" value="Reset" disabled>
+            <div id="status-box" hidden></div>
+        </div>
+    </aside>
+
+    <!-- ============ Cutting-mat stage ============ -->
+    <main class="stage">
+        <div class="ruler ruler-x" aria-hidden="true"></div>
+        <div class="ruler ruler-y" aria-hidden="true"></div>
+
+        <div class="view-toggle" role="group" aria-label="View">
+            <span class="view-toggle-pill" aria-hidden="true"></span>
+            <button type="button" id="view-original" aria-pressed="false" disabled>Original</button>
+            <button type="button" id="view-art" aria-pressed="true" disabled>String art</button>
+        </div>
+
+        <div class="board" id="board">
+            <div class="flipper">
+                <div class="face face-front">
+                    <canvas id="canvas"></canvas>
+                    <canvas id="overlay" aria-hidden="true"></canvas>
+                </div>
+                <div class="face face-back">
+                    <canvas id="original"></canvas>
+                </div>
+            </div>
+
+            <div class="empty" id="empty-state">
+                <svg class="empty-art" id="empty-art" viewBox="0 0 200 200" aria-hidden="true"></svg>
+                <p class="empty-title">Start with a photo</p>
+                <p class="empty-text">Choose an image, or drop one anywhere on this page. Portraits with a plain background work best.</p>
+                <button type="button" class="btn btn-accent" id="empty-select-btn">Choose image</button>
             </div>
         </div>
 
-        <div class="controls">
-            <div class="control-block centered no-top-padding">
-                <input type="submit" id="select-btn" value="Choose image"><br>
-            </div>
-
-            <div id="controls-box">
-                <div class="control-block no-top-padding">
-                    <label><b>Board shape</b>
-                        <select id="form-type-box" disabled>
-                            <option value="circle" selected>Circle</option>
-                            <option value="rect">Square</option>
-                            <option value="album">Landscape</option>
-                            <option value="portrait">Portrait</option>
-                            <option value="hexagon">Hexagon (flat top)</option>
-                            <option value="hexagon-pointy">Hexagon (pointy top)</option>
-                            <option value="oval-horizontal">Oval (horizontal)</option>
-                            <option value="oval-vertical">Oval (vertical)</option>
-                            <option value="image">Match image</option>
-                        </select>
-                    </label>
-                </div>
-
-                <div class="control-block no-top-padding">
-                    <input type="checkbox" id="invert-box" disabled> <label for="invert-box">Invert brightness</label>
-                </div>
-
-                <div class="control-block no-margin no-top-padding">
-                    <label><b>Contrast</b><br>
-                        <input type="range" id="contrast-box" value="0" min="-100" max="100" step="5" disabled>
-                    </label>
-                    <div class="range-label" id="contrast-value">0</div>
-
-                    <label><b>Brightness</b><br>
-                        <input type="range" id="brightness-box" value="0" min="-100" max="100" step="5" disabled>
-                    </label>
-                    <div class="range-label" id="brightness-value">0</div>
-                </div>
-
-                <div class="control-block no-top-padding">
-                    <label><b>Nail layout</b>
-                        <select id="nails-mode-box" disabled>
-                            <option value="border" selected>Along the edge</option>
-                            <option value="grid">Grid</option>
-                            <option value="random">Random</option>
-                        </select>
-                    </label>
-                </div>
-
-                <div class="control-block no-top-padding">
-                    <label><b>Number of nails</b><br>
-                        <input type="number" id="nails-count-box" value="250" min="50" max="1000" disabled>
-                    </label>
-                </div>
-
-                <div class="control-block no-top-padding">
-                    <label><b>Show nail numbers</b>
-                        <select id="nail-numbers-box" disabled>
-                            <option value="off" selected>Off</option>
-                            <option value="all">Every nail</option>
-                            <option value="5">Every 5th nail</option>
-                            <option value="10">Every 10th nail</option>
-                        </select>
-                    </label>
-                </div>
-
-                <div class="control-block">
-                    <label><b>Number of lines</b><br>
-                        <input type="number" id="lines-count-box" value="2000" min="100" max="10000" disabled>
-                    </label>
-                </div>
-
-                <div class="control-block">
-                    <label><b>Line opacity</b><br>
-                        <input type="range" id="lines-weight-box" value="10" min="1" max="100" disabled>
-                    </label>
-                    <div class="range-label" id="lines-weight-value">10%</div>
-                </div>
-
-                <div class="control-block no-margin">
-                    <input type="color" id="lines-color-box" value="#000000" disabled> <label for="lines-color-box"><b>Line color</b></label>
-                </div>
-
-                <div class="control-block">
-                    <input type="color" id="background-color-box" value="#ffffff" disabled> <label for="background-color-box"><b>Background color</b></label>
-                </div>
-
-                <div class="control-block centered">
-                    <input type="submit" id="generate-btn" value="Generate" disabled>
-                    <input type="submit" id="reset-btn" value="Reset" disabled>
-                    <div id="status-box"></div>
-                </div>
-            </div>
-
-            <div class="control-block">
-                <div id="info-box">Choose an image or drag one onto this panel to start.</div>
-            </div>
-
-            <div id="save-box" style="display: none">
-                <hr>
-                <div class="control-block no-top-padding">
-                    <label><b>Save as:</b>
-                        <select id="save-type-box">
-                            <option value="png">Image (PNG)</option>
-                            <option value="svg">Vector (SVG)</option>
-                            <option value="template">Nail template (SVG, numbered)</option>
-                            <option value="sequence">Winding sequence (TXT)</option>
-                            <option value="stringart">Project file (.stringart)</option>
-                        </select>
-                    </label>
-                </div>
-
-                <div class="control-block no-top-padding centered">
-                    <input type="submit" id="save-btn" value="Save">
-                </div>
-            </div>
+        <div class="status">
+            <div class="thread" aria-hidden="true"><div class="thread-fill" id="thread-fill"></div></div>
+            <div id="info-box" class="info" aria-live="polite"></div>
         </div>
 
-        <div class="view">
-            <div class="canvas-wrap">
-                <canvas id="canvas"></canvas>
-                <canvas id="overlay" aria-hidden="true"></canvas>
-            </div>
+        <div id="save-box" class="export" style="display: none">
+            <select id="save-type-box" class="hidden-select" tabindex="-1" aria-hidden="true">
+                <option value="png">png</option>
+                <option value="svg">svg</option>
+                <option value="template">template</option>
+                <option value="sequence">sequence</option>
+                <option value="stringart">stringart</option>
+            </select>
+            <span class="export-label">Download</span>
+            <button type="button" class="btn btn-chip" data-save="png">PNG image</button>
+            <button type="button" class="btn btn-chip" data-save="svg">SVG vector</button>
+            <button type="button" class="btn btn-chip" data-save="template">Nail template</button>
+            <button type="button" class="btn btn-chip" data-save="sequence">Winding sequence</button>
+            <button type="button" class="btn btn-chip" data-save="stringart">Project file</button>
+            <input type="button" id="save-btn" value="Save" hidden>
         </div>
+
+        <p class="privacy">Runs entirely in your browser. Your photo is never uploaded.</p>
+    </main>
+
+    <div class="drag-drop" id="drag-drop-box" style="display: none">
+        <div class="drag-drop-inner">Drop the photo to load it</div>
     </div>
+</div>
 
-    <p class="footer">Everything runs in your browser — images are never uploaded anywhere.</p>
-
-    <script src="js/constants.js"></script>
-    <script src="js/string_art_generator.js"></script>
-    <script src="js/init.js"></script>
-    <script src="js/events.js"></script>
-    <script src="js/draw.js"></script>
-    <script src="js/shapes.js"></script>
-    <script>
-        let canvas = document.getElementById('canvas')
-        let generator = new StringArtGenerator(canvas)
-    </script>
+<script src="js/constants.js"></script>
+<script src="js/string_art_generator.js"></script>
+<script src="js/init.js"></script>
+<script src="js/events.js"></script>
+<script src="js/draw.js"></script>
+<script src="js/shapes.js"></script>
+<script>
+    let canvas = document.getElementById('canvas')
+    let generator = new StringArtGenerator(canvas)
+</script>
+<script src="js/ui.js"></script>
 </body>
 </html>

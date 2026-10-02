@@ -32,6 +32,12 @@ StringArtGenerator.prototype.LoadImage = function(image) {
 
     this.generateBtn.removeAttribute('disabled')
     this.nailNumbersBox.removeAttribute('disabled')
+    this.Notify('imageloaded')
+}
+
+// Lets the page UI react to what the generator is doing (see js/ui.js)
+StringArtGenerator.prototype.Notify = function(name, detail = {}) {
+    document.dispatchEvent(new CustomEvent('stringart:' + name, { detail: detail }))
 }
 
 StringArtGenerator.prototype.UpdateForm = function() {
@@ -148,25 +154,22 @@ StringArtGenerator.prototype.ShowInfo = function(linesCount, totalCount, startTi
     let lost = this.TimeToString((currTime - startTime) / (totalCount - linesCount) * linesCount)
     let avg = ((currTime - startTime) / (totalCount - linesCount)).toFixed(2)
 
-    this.infoBox.innerHTML = `<b>Lines left:</b> ${linesCount}<br>`
-    this.infoBox.innerHTML += `<b>Elapsed:</b> ${time}<br>`
-    this.infoBox.innerHTML += `<b>Remaining:</b> ${lost}<br>`
-    this.infoBox.innerHTML += `<b>Avg. time per line:</b> ${avg} ms`
+    let done = totalCount - linesCount
+
+    this.infoBox.innerHTML =
+        `<span class="stat"><b>${done.toLocaleString('en')}</b> of ${totalCount.toLocaleString('en')} lines</span>` +
+        `<span class="stat"><b>${time}</b> elapsed</span>` +
+        `<span class="stat"><b>${lost}</b> remaining</span>` +
+        `<span class="stat"><b>${avg}</b> ms per line</span>`
+
+    this.Notify('progress', { done: done, total: totalCount })
 }
 
 StringArtGenerator.prototype.GetActions = function() {
-    let actions = '<b>Position the image:</b><br>'
+    if ('ontouchstart' in window)
+        return '<span class="hint">Pinch to zoom and drag to position the photo on the board, then press <b>Generate</b>.</span>'
 
-    if ('ontouchstart' in window) {
-        actions += '<b>Zoom</b> – pinch<br>'
-        actions += '<b>Move</b> – drag with one finger'
-    }
-    else {
-        actions += '<b>Zoom</b> – mouse wheel<br>'
-        actions += '<b>Move</b> – drag with the left mouse button'
-    }
-
-    return actions
+    return '<span class="hint">Scroll to zoom and drag to position the photo on the board, then press <b>Generate</b>.</span>'
 }
 
 StringArtGenerator.prototype.GetLineWeight = function() {
@@ -210,6 +213,7 @@ StringArtGenerator.prototype.Reset = function(needResetImage = true) {
     this.isGenerating = false
     this.isLineDrawing = false
     this.generateBtn.value = 'Generate'
+    this.Notify('reset')
 
     for (let control of this.controls)
         control.removeAttribute('disabled')
@@ -241,6 +245,7 @@ StringArtGenerator.prototype.StartGenerate = function() {
         control.setAttribute('disabled', '')
 
     this.generateBtn.value = 'Pause'
+    this.Notify('start')
     return true
 }
 
@@ -252,6 +257,7 @@ StringArtGenerator.prototype.EndGenerate = function() {
     this.resetBtn.removeAttribute('disabled')
     this.selectBtn.removeAttribute('disabled')
     this.linesCountBox.removeAttribute('disabled')
+    this.Notify('stop', { lines: this.sequence.length - 1 })
 }
 
 StringArtGenerator.prototype.GenerateIteration = function(nail, linesCount, totalCount, lineWeight, lineColor, startTime) {
