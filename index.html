@@ -55,8 +55,10 @@
 
     <!-- ============ Mode ============ -->
     <div class="mode-tabs" role="tablist" aria-label="Mode">
-        <button type="button" role="tab" id="tab-art" aria-selected="true" aria-controls="panel-art">String art</button>
-        <button type="button" role="tab" id="tab-template" aria-selected="false" aria-controls="panel-template">Board template</button>
+        <button type="button" role="tab" id="tab-art" aria-selected="true" aria-controls="panel-art"><span class="step-num">1</span><span>String art</span></button>
+        <button type="button" role="tab" id="tab-template" aria-selected="false" aria-controls="panel-template"><span class="step-num">2</span><span>Template</span></button>
+        <button type="button" role="tab" id="tab-plotter" aria-selected="false" aria-controls="panel-plotter"><span class="step-num">3</span><span>Plotter</span></button>
+        <button type="button" role="tab" id="tab-machine" aria-selected="false" aria-controls="panel-machine"><span class="step-num">4</span><span>Machine</span></button>
     </div>
 
     <!-- ============ Settings ============ -->
@@ -122,6 +124,14 @@
                         <button type="button" data-value="random">Random</button>
                     </div>
                 </div>
+                <div class="field seed-field" id="random-seed-field" hidden>
+                    <label for="random-seed-box" class="field-label">Random pattern number</label>
+                    <div class="seed-row">
+                        <input type="number" id="random-seed-box" value="1" min="1" max="99999" step="1" disabled>
+                        <button type="button" class="btn btn-ghost" id="random-seed-new" data-seed-for="random-seed-box" disabled>New pattern</button>
+                    </div>
+                    <p class="note">The same number always gives the same nails. Use it on Board template to print this exact layout.</p>
+                </div>
                 <div class="field">
                     <div class="field-row"><label for="nails-count-box">Number of nails</label><output id="nails-count-value" for="nails-count-box">250</output></div>
                     <input type="range" id="nails-count-box" value="250" min="50" max="1000" step="10" data-output="nails-count-value" disabled>
@@ -184,7 +194,7 @@
                         <button type="button" data-value="custom">Custom board</button>
                         <button type="button" data-value="art">Current string art</button>
                     </div>
-                    <p class="note">"Current string art" uses the exact nails of the art on the String art tab, including grid and random layouts.</p>
+                    <p class="note" id="tpl-source-note">"Current string art" uses the exact nails of the art on the String art tab, including grid and random layouts.</p>
                 </section>
 
                 <section class="group">
@@ -199,6 +209,14 @@
                         <div class="segmented" id="tpl-layout" role="group" aria-labelledby="tpl-layout-label">
                             <button type="button" data-value="border">Edge</button>
                             <button type="button" data-value="grid">Grid</button>
+                            <button type="button" data-value="random">Random</button>
+                        </div>
+                    </div>
+                    <div class="field seed-field" id="tpl-seed-field" hidden>
+                        <label for="tpl-seed" class="field-label">Random pattern number</label>
+                        <div class="seed-row">
+                            <input type="number" id="tpl-seed" value="1" min="1" max="99999" step="1">
+                            <button type="button" class="btn btn-ghost" id="tpl-seed-new" data-seed-for="tpl-seed">New pattern</button>
                         </div>
                     </div>
                     <div class="field">
@@ -254,8 +272,208 @@
                 <button type="button" class="btn btn-accent btn-big" id="tpl-pdf">Download PDF</button>
                 <button type="button" class="btn btn-ghost" id="tpl-svg">SVG</button>
                 <button type="button" class="btn btn-ghost" id="tpl-png">PNG</button>
+                <button type="button" class="btn btn-ghost btn-next" data-next="plotter">Next: Plotter →</button>
             </div>
             <p class="busy" id="tpl-busy" aria-live="polite"></p>
+        </div>
+
+        <!-- ============ Plotter: G-code for GRBL XY plotters ============ -->
+        <div class="panel" id="panel-plotter" role="tabpanel" aria-labelledby="tab-plotter" hidden>
+            <div class="sidebar-scroll">
+                <p class="panel-intro">G-code for a GRBL XY plotter. Job 1 marks every nail position on the board. Job 2 winds the thread nail by nail with a thread guide.</p>
+
+                <section class="group">
+                    <h2>Board</h2>
+                    <p class="board-summary" id="plotter-board"></p>
+                    <button type="button" class="btn btn-ghost btn-small" id="plotter-edit-board">Change board on Board template</button>
+                </section>
+
+                <section class="group" id="plotter-source-group" hidden>
+                    <h2>Nails from</h2>
+                    <div class="segmented" id="plotter-source" role="group" aria-label="Nails from">
+                        <button type="button" data-value="custom">Custom board</button>
+                        <button type="button" data-value="art">Current string art</button>
+                    </div>
+                    <p class="note">Thread winding follows the generated art, so it needs "Current string art".</p>
+                </section>
+
+                <section class="group">
+                    <h2>Machine</h2>
+                    <div class="field"><span class="field-label" id="pl-origin-label">Work zero (X0 Y0) at the board</span><div class="segmented" data-choice="origin" role="group" aria-labelledby="pl-origin-label"><button type="button" data-value="bl">Bottom-left</button><button type="button" data-value="tl">Top-left</button><button type="button" data-value="c">Centre</button></div></div>
+                    <div class="field"><span class="field-label" id="pl-yUp-label">Y axis points</span><div class="segmented" data-choice="yUp" role="group" aria-labelledby="pl-yUp-label"><button type="button" data-value="up">Up</button><button type="button" data-value="down">Down</button></div></div>
+                    <div class="two-col">
+                        <div class="field"><label class="field-label" for="pl-offX">Offset X (mm)</label><input type="number" id="pl-offX" data-key="offX" step="any"></div>
+                        <div class="field"><label class="field-label" for="pl-offY">Offset Y (mm)</label><input type="number" id="pl-offY" data-key="offY" step="any"></div>
+                    </div>
+                    <div class="field"><label class="field-label" for="pl-travelFeed">Travel speed (mm/min)</label><input type="number" id="pl-travelFeed" data-key="travelFeed" step="1" min="100" max="20000"></div>
+                </section>
+
+                <section class="group">
+                    <h2>Job 1: nail positions</h2>
+                    <div class="field"><span class="field-label" id="pl-tool-label">Tool</span><div class="segmented" data-choice="tool" role="group" aria-labelledby="pl-tool-label"><button type="button" data-value="servo">Servo pen</button><button type="button" data-value="z">Z axis</button><button type="button" data-value="laser">Laser</button></div></div>
+                    <div data-tool="servo">
+                        <div class="two-col">
+                            <div class="field"><label class="field-label" for="pl-servoDown">Pen down</label><input type="text" id="pl-servoDown" data-key="servoDown" spellcheck="false"></div>
+                            <div class="field"><label class="field-label" for="pl-servoUp">Pen up</label><input type="text" id="pl-servoUp" data-key="servoUp" spellcheck="false"></div>
+                        </div>
+                        <div class="field"><label class="field-label" for="pl-servoDelay">Servo delay (s)</label><input type="number" id="pl-servoDelay" data-key="servoDelay" step="0.05" min="0" max="5"></div>
+                    </div>
+                    <div data-tool="z" hidden>
+                        <div class="two-col">
+                            <div class="field"><label class="field-label" for="pl-zUp">Z up (mm)</label><input type="number" id="pl-zUp" data-key="zUp" step="any" min="-100" max="200"></div>
+                            <div class="field"><label class="field-label" for="pl-zDown">Z down (mm)</label><input type="number" id="pl-zDown" data-key="zDown" step="any" min="-50" max="100"></div>
+                        </div>
+                        <div class="field"><label class="field-label" for="pl-plungeFeed">Plunge speed (mm/min)</label><input type="number" id="pl-plungeFeed" data-key="plungeFeed" step="1" min="10" max="5000"></div>
+                        <p class="note">Z0 is the board surface. A negative Z down with a "Dot" mark drills pilot holes.</p>
+                    </div>
+                    <div data-tool="laser" hidden>
+                        <div class="field"><label class="field-label" for="pl-laserPower">Laser power (S)</label><input type="number" id="pl-laserPower" data-key="laserPower" step="1" min="1" max="100000"></div>
+                        <p class="note">Needs GRBL laser mode ($32=1). Dots are burnt as tiny circles. Wear eye protection.</p>
+                    </div>
+                    <div class="field"><span class="field-label" id="pl-mark-label">Mark</span><div class="segmented" data-choice="mark" role="group" aria-labelledby="pl-mark-label"><button type="button" data-value="dot">Dot</button><button type="button" data-value="cross">Cross</button><button type="button" data-value="circle">Circle</button></div></div>
+                    <div class="two-col">
+                        <div class="field"><label class="field-label" for="pl-markSize">Mark size (mm)</label><input type="number" id="pl-markSize" data-key="markSize" step="0.1" min="0.2" max="20"></div>
+                        <div class="field"><label class="field-label" for="pl-drawFeed">Drawing speed (mm/min)</label><input type="number" id="pl-drawFeed" data-key="drawFeed" step="1" min="10" max="20000"></div>
+                    </div>
+                    <div class="field"><span class="field-label" id="pl-numbers-label">Write pin numbers</span><div class="segmented" data-choice="numbers" role="group" aria-labelledby="pl-numbers-label"><button type="button" data-value="off">Off</button><button type="button" data-value="all">All</button><button type="button" data-value="5">Every 5</button><button type="button" data-value="10">Every 10</button></div></div>
+                </section>
+
+                <section class="group">
+                    <h2>Job 2: thread winding</h2>
+                    <label class="check">
+                        <input type="checkbox" id="pl-useZ" data-key="useZ">
+                        <span class="check-box" aria-hidden="true"></span>
+                        <span>Machine has a Z axis for the thread guide</span>
+                    </label>
+                    <div data-needs-z>
+                        <div class="two-col">
+                            <div class="field"><label class="field-label" for="pl-windZ">Winding Z (mm)</label><input type="number" id="pl-windZ" data-key="windZ" step="any" min="-50" max="200"></div>
+                            <div class="field"><label class="field-label" for="pl-safeZ">Safe Z (mm)</label><input type="number" id="pl-safeZ" data-key="safeZ" step="any" min="-50" max="300"></div>
+                        </div>
+                        <p class="note">Winding Z puts the guide tip below the nail heads. Safe Z clears them.</p>
+                        <div class="field"><span class="field-label" id="pl-lift-label">Lift over nails between wraps</span><div class="segmented" data-choice="lift" role="group" aria-labelledby="pl-lift-label"><button type="button" data-value="auto">Auto</button><button type="button" data-value="always">Always</button><button type="button" data-value="never">Never</button></div></div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field"><label class="field-label" for="pl-nailDia">Nail diameter (mm)</label><input type="number" id="pl-nailDia" data-key="nailDia" step="0.1" min="0.3" max="10"></div>
+                        <div class="field"><label class="field-label" for="pl-guideDia">Guide diameter (mm)</label><input type="number" id="pl-guideDia" data-key="guideDia" step="0.1" min="0.2" max="10"></div>
+                    </div>
+                    <div class="field"><label class="field-label" for="pl-wrapR">Wrap radius (guide centre to nail centre) (mm)</label><input type="number" id="pl-wrapR" data-key="wrapR" step="0.1" min="0.5" max="20"></div>
+                    <div class="field"><span class="field-label" id="pl-dir-label">Wrap direction</span><div class="segmented" data-choice="dir" role="group" aria-labelledby="pl-dir-label"><button type="button" data-value="cw">Clockwise</button><button type="button" data-value="ccw">Counter-clockwise</button></div></div>
+                    <div class="field"><span class="field-label" id="pl-turns-label">Wrap</span><div class="segmented" data-choice="turns" role="group" aria-labelledby="pl-turns-label"><button type="button" data-value="1">Normal</button><button type="button" data-value="2">Extra full turn</button></div></div>
+                    <div class="two-col">
+                        <div class="field"><label class="field-label" for="pl-windFeed">Wrap speed (mm/min)</label><input type="number" id="pl-windFeed" data-key="windFeed" step="1" min="10" max="20000"></div>
+                        <div class="field"><label class="field-label" for="pl-pauseEvery">Pause every (lines)</label><input type="number" id="pl-pauseEvery" data-key="pauseEvery" step="1" min="0" max="100000"></div>
+                    </div>
+                    <p class="note">The guide travels to the side of each nail facing the previous nail, then circles round to face the next one (always at least half a turn) so the thread hooks. "Pause every" adds M0 stops to check tension (0 = never).</p>
+                    <button type="button" class="btn btn-ghost btn-small" id="plotter-reset">Reset plotter settings</button>
+                </section>
+            </div>
+
+            <div class="actions">
+                <button type="button" class="btn btn-accent btn-big" id="plotter-nails">Download nail G-code</button>
+                <button type="button" class="btn btn-ghost btn-big" id="plotter-wind" disabled>Download winding G-code</button>
+                <button type="button" class="btn btn-ghost btn-big btn-next" data-next="machine">Next: run on the machine →</button>
+            </div>
+        </div>
+
+        <!-- ============ Machine: drive a GRBL board over USB ============ -->
+        <div class="panel" id="panel-machine" role="tabpanel" aria-labelledby="tab-machine" hidden>
+            <div class="sidebar-scroll">
+                <p class="panel-intro">Run the plotter straight from this page over USB: connect, jog, set work zero, then run Job 1 and Job 2.</p>
+
+                <section class="group">
+                    <h2>Connection</h2>
+                    <div class="segmented" id="mc-kind" role="group" aria-label="Connection type">
+                        <button type="button" data-value="serial">USB / COM port</button>
+                        <button type="button" data-value="sim">Simulator</button>
+                    </div>
+                    <div class="field" id="mc-baud-field" style="margin-top: 12px">
+                        <label class="field-label" for="mc-baud">Baud rate</label>
+                        <select id="mc-baud" class="select">
+                            <option value="115200" selected>115200 (GRBL 1.1 default)</option>
+                            <option value="250000">250000</option>
+                            <option value="230400">230400</option>
+                            <option value="57600">57600</option>
+                            <option value="38400">38400</option>
+                            <option value="19200">19200</option>
+                            <option value="9600">9600 (GRBL 0.8)</option>
+                        </select>
+                    </div>
+                    <p class="note" id="mc-support"></p>
+                </section>
+
+                <section class="group">
+                    <h2>Jog</h2>
+                    <div class="field">
+                        <span class="field-label" id="mc-step-label">Step</span>
+                        <div class="segmented" id="mc-step" role="group" aria-labelledby="mc-step-label">
+                            <button type="button" data-value="0.1">0.1</button>
+                            <button type="button" data-value="1">1</button>
+                            <button type="button" data-value="10" aria-pressed="true">10</button>
+                            <button type="button" data-value="50">50 mm</button>
+                        </div>
+                    </div>
+                    <div class="jog-wrap">
+                        <div class="jogpad" role="group" aria-label="Jog X and Y">
+                            <button type="button" data-jog="-1,1,0" aria-label="Jog X minus, Y plus">↖</button>
+                            <button type="button" data-jog="0,1,0">Y+</button>
+                            <button type="button" data-jog="1,1,0" aria-label="Jog X plus, Y plus">↗</button>
+                            <button type="button" data-jog="-1,0,0">X−</button>
+                            <button type="button" id="mc-jog-cancel" title="Cancel jog (Esc)" aria-label="Cancel jog">■</button>
+                            <button type="button" data-jog="1,0,0">X+</button>
+                            <button type="button" data-jog="-1,-1,0" aria-label="Jog X minus, Y minus">↙</button>
+                            <button type="button" data-jog="0,-1,0">Y−</button>
+                            <button type="button" data-jog="1,-1,0" aria-label="Jog X plus, Y minus">↘</button>
+                        </div>
+                        <div class="jog-z" role="group" aria-label="Jog Z">
+                            <button type="button" data-jog="0,0,1">Z+</button>
+                            <button type="button" data-jog="0,0,-1">Z−</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="mc-jog-feed">Jog speed (mm/min)</label>
+                        <input type="number" id="mc-jog-feed" value="1500" min="10" max="20000" step="10">
+                    </div>
+                    <label class="check">
+                        <input type="checkbox" id="mc-keys">
+                        <span class="check-box" aria-hidden="true"></span>
+                        <span>Keyboard jogging (arrows, PgUp / PgDn, Esc to cancel)</span>
+                    </label>
+                </section>
+
+                <section class="group">
+                    <h2>Work zero</h2>
+                    <p class="note">Jog the pen or guide over the board's work-zero point (red X/Y arrows on the Plotter tab), lower Z to the board surface, then press Zero all.</p>
+                    <div class="btn-grid">
+                        <button type="button" class="btn btn-ghost" data-zero="X">Zero X</button>
+                        <button type="button" class="btn btn-ghost" data-zero="Y">Zero Y</button>
+                        <button type="button" class="btn btn-ghost" data-zero="Z">Zero Z</button>
+                        <button type="button" class="btn btn-ghost" data-zero="XYZ">Zero all</button>
+                    </div>
+                    <button type="button" class="btn btn-ghost btn-small wide" id="mc-goto-zero">Go to X0 Y0</button>
+                </section>
+
+                <section class="group">
+                    <h2>Machine</h2>
+                    <div class="btn-grid three">
+                        <button type="button" class="btn btn-ghost" id="mc-home" title="$H: run the homing cycle (needs limit switches and $22=1)">Home</button>
+                        <button type="button" class="btn btn-ghost" id="mc-unlock" title="$X: clear an alarm lock">Unlock</button>
+                        <button type="button" class="btn btn-ghost" id="mc-reset" title="Ctrl-X: soft reset">Reset</button>
+                    </div>
+                    <div class="field" style="margin-top: 12px">
+                        <div class="field-row"><span class="field-label" style="margin: 0">Feed override</span><output id="mc-ov-side">100%</output></div>
+                        <div class="btn-grid three">
+                            <button type="button" class="btn btn-ghost" data-ov="92">−10%</button>
+                            <button type="button" class="btn btn-ghost" data-ov="90">100%</button>
+                            <button type="button" class="btn btn-ghost" data-ov="91">+10%</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="actions">
+                <button type="button" class="btn btn-accent btn-big" id="mc-connect">Connect</button>
+            </div>
         </div>
     </aside>
 
@@ -306,7 +524,7 @@
             <span class="export-label">Download</span>
             <button type="button" class="btn btn-chip" data-save="png">PNG image</button>
             <button type="button" class="btn btn-chip" data-save="svg">SVG vector</button>
-            <button type="button" class="btn btn-chip" data-save="template">Board template…</button>
+            <button type="button" class="btn btn-chip btn-next" data-next="template">Next: Template →</button>
             <button type="button" class="btn btn-chip" data-save="sequence">Winding sequence</button>
             <button type="button" class="btn btn-chip" data-save="stringart">Project file</button>
             <input type="button" id="save-btn" value="Save" hidden>
@@ -317,6 +535,98 @@
         <div class="stage-template" id="stage-template" hidden>
             <div class="template-preview" id="template-preview" aria-label="Template preview"></div>
             <div class="info" id="template-info" aria-live="polite"></div>
+        </div>
+
+        <div class="stage-template stage-plotter" id="stage-plotter" hidden>
+            <div class="plotter-toolbar">
+                <div class="view-toggle plotter-view" id="plotter-view" data-choice="view" role="group" aria-label="Preview">
+                    <button type="button" data-value="nails">Job 1: nails</button>
+                    <button type="button" data-value="wind">Job 2: winding</button>
+                </div>
+                <button type="button" class="btn btn-chip" id="plotter-play">▶ Play toolpath</button>
+            </div>
+            <div class="template-preview" id="plotter-preview" aria-label="Toolpath preview"></div>
+            <div class="info" id="plotter-info" aria-live="polite"></div>
+            <ul class="plotter-warnings" id="plotter-warnings" hidden></ul>
+        </div>
+
+        <div class="stage-machine" id="stage-machine" hidden>
+            <div class="dro" aria-live="off">
+                <span class="mc-state st-disconnected" id="mc-state">Disconnected</span>
+                <div class="axis"><span class="axis-name">X</span><span class="axis-w" id="mc-wx">0.00</span><span class="axis-m">machine <span id="mc-mx">0.00</span></span></div>
+                <div class="axis"><span class="axis-name">Y</span><span class="axis-w" id="mc-wy">0.00</span><span class="axis-m">machine <span id="mc-my">0.00</span></span></div>
+                <div class="axis"><span class="axis-name">Z</span><span class="axis-w" id="mc-wz">0.00</span><span class="axis-m">machine <span id="mc-mz">0.00</span></span></div>
+                <div class="axis small"><span class="axis-name">Feed</span><span class="axis-w" id="mc-feed">0</span><span class="axis-m">mm/min · <span id="mc-ov">100%</span></span></div>
+            </div>
+
+            <div class="mc-banner" id="mc-banner" hidden role="status">
+                <span id="mc-banner-text"></span>
+                <button type="button" class="btn btn-accent" id="mc-banner-resume" hidden>Resume</button>
+            </div>
+
+            <div class="mc-grid">
+                <div class="mc-preview" id="mc-preview"></div>
+
+                <div class="mc-side">
+                    <section class="mc-card">
+                        <h3>Job</h3>
+                        <div class="segmented" id="mc-job" role="group" aria-label="Job">
+                            <button type="button" data-value="nails">Job 1: nails</button>
+                            <button type="button" data-value="wind">Job 2: winding</button>
+                            <button type="button" data-value="file">Open file…</button>
+                        </div>
+                        <input type="file" id="mc-file" accept=".gcode,.nc,.ngc,.gc,.tap,.txt" hidden>
+                        <p class="mc-job-info" id="mc-job-info">Choose a job.</p>
+                        <div class="thread"><div class="thread-fill" id="mc-progress-fill"></div></div>
+                        <p class="mc-job-stats" id="mc-job-stats"></p>
+                        <label class="check">
+                            <input type="checkbox" id="mc-check">
+                            <span class="check-box" aria-hidden="true"></span>
+                            <span>Dry run in check mode ($C): GRBL checks every line without moving</span>
+                        </label>
+                        <div class="btn-grid four">
+                            <button type="button" class="btn btn-accent" id="mc-start">Start</button>
+                            <button type="button" class="btn btn-ghost" id="mc-pause">Pause</button>
+                            <button type="button" class="btn btn-ghost" id="mc-resume">Resume</button>
+                            <button type="button" class="btn btn-stop" id="mc-stop">Stop</button>
+                        </div>
+                    </section>
+
+                    <section class="mc-card">
+                        <div class="console-head">
+                            <h3>Console</h3>
+                            <label class="check small"><input type="checkbox" id="mc-show-status"><span class="check-box" aria-hidden="true"></span><span>Status reports</span></label>
+                            <button type="button" class="btn btn-chip tiny" id="mc-clear-log">Clear</button>
+                        </div>
+                        <div class="console-log" id="mc-log" role="log" aria-live="polite"></div>
+                        <div class="console-input">
+                            <input type="text" id="mc-cmd" placeholder="Command, e.g. $$ or G0 X10" spellcheck="false" autocomplete="off" aria-label="Command">
+                            <button type="button" class="btn btn-accent" id="mc-send">Send</button>
+                        </div>
+                        <div class="quick">
+                            <button type="button" class="btn btn-chip tiny" data-quick="$$" title="Show all settings">$$ settings</button>
+                            <button type="button" class="btn btn-chip tiny" data-quick="$#" title="Work offsets">$# offsets</button>
+                            <button type="button" class="btn btn-chip tiny" data-quick="$G" title="Parser state">$G state</button>
+                            <button type="button" class="btn btn-chip tiny" data-quick="$I" title="Build info">$I info</button>
+                            <button type="button" class="btn btn-chip tiny" data-quick="?" title="One status report">? status</button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <dialog class="mc-dialog" id="mc-confirm">
+                <h3>Start <span id="mc-confirm-job"></span>?</h3>
+                <p id="mc-confirm-check" hidden><b>Check mode:</b> GRBL reads every line and reports problems, but nothing moves.</p>
+                <ul>
+                    <li>Work zero is set at the point shown on the Plotter tab.</li>
+                    <li>Pen, drill or thread guide is fitted, and the board is clamped.</li>
+                    <li>Nothing is in the machine's way, and you can reach the power switch.</li>
+                </ul>
+                <div class="dialog-actions">
+                    <button type="button" class="btn btn-ghost" id="mc-confirm-cancel">Cancel</button>
+                    <button type="button" class="btn btn-accent" id="mc-confirm-go">Start job</button>
+                </div>
+            </dialog>
         </div>
 
         <footer class="site-footer">
@@ -345,5 +655,7 @@
 </script>
 <script src="js/ui.js"></script>
 <script src="js/template.js"></script>
+<script src="js/plotter.js"></script>
+<script src="js/machine.js"></script>
 </body>
 </html>

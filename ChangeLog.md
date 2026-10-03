@@ -7,6 +7,35 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 Copyright © 2026 Chanchal Sakarde · [woodyouloveit.com](https://woodyouloveit.com) · [wooduloveit.com](https://wooduloveit.com) · [GPL-3.0 License](https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file)
 
+## [4.3.0] - 2026-10-03
+
+### Added
+- **Machine tab: drive a GRBL plotter from the browser over USB** (Web Serial, Chrome or Edge on a computer, https or localhost).
+  - **Connection:** pick the COM port and baud rate (115200 default); boards that don't reset on connect get a soft reset to wake them.
+  - **Status:** live state (Idle, Run, Hold, Jog, Alarm, Check…), work and machine X/Y/Z, feed rate and feed override; GRBL 1.1 and 0.9 status formats.
+  - **Jogging:** X/Y pad with diagonals, Z up/down, 0.1/1/10/50 mm steps, jog speed, jog cancel, optional keyboard jogging (arrows, PgUp/PgDn, Esc).
+  - **Work zero:** Zero X, Y, Z or all (`G10 L20 P1`), Go to X0 Y0, Home (`$H`), Unlock (`$X`), soft reset, feed override −10% / 100% / +10%.
+  - **Jobs:** run Job 1 (nails) or Job 2 (winding) straight from the Plotter tab, or open any `.gcode` file. Streams with GRBL's character-counting protocol (128-byte buffer). Start asks for a safety check first. Pause (feed hold), Resume (cycle start), and Stop that holds first and then resets, so the machine keeps its position instead of raising "reset while moving". M0 pauses show their message ("Tie the thread to nail 1…") with a Resume button. Stops on the first error with the line and a plain-English explanation. Dry run in check mode (`$C`). Progress, elapsed time and time left.
+  - **Preview:** the job in machine coordinates with the live head position and the finished part highlighted.
+  - **Console:** send any command with history (↑/↓), plain-English explanations for GRBL errors and alarms, optional status reports, quick buttons for `$$`, `$#`, `$G`, `$I`, `?`.
+  - **Simulator:** a built-in GRBL 1.1 simulator to rehearse everything without hardware.
+- **One flow from String art to Machine:** generated art automatically sets the board on Template and Plotter (shape, layout, nails, pattern number). "Next" buttons lead from step to step, and the tabs are a numbered stepper: 1 String art → 2 Template → 3 Plotter → 4 Machine.
+
+## [4.2.0] - 2026-10-02
+
+### Added
+- **Plotter tab: G-code for GRBL XY plotters**, using the same real-millimetre board as Board template.
+  - **Job 1, nail positions:** marks every nail with a servo pen (custom pen up/down commands), a Z-axis pen or drill (a negative Z with "Dot" drills pilot holes), or a laser (`$32=1`). Marks can be a dot, cross or circle. Pin numbers can be written in a single-stroke font, every nail, every 5th or every 10th. Grid and random nails are visited in nearest-neighbour order.
+  - **Job 2, thread winding:** the thread guide visits nails in the generated sequence. For each nail it travels to the side facing the previous nail, then wraps with G2/G3 arcs round to the side facing the next nail (always at least half a turn, optional extra full turn, clockwise or counter-clockwise). Travel moves that would clip another nail are routed round it. Optional Z lift between nails (automatic for grid and random layouts), and M0 pauses to tie on, check tension every N lines, and tie off.
+  - Machine settings: work zero at the board's bottom-left, top-left or centre, Y up or down, X/Y offsets, speeds. Settings are remembered in the browser.
+  - Toolpath preview with work-zero axes, a "Play toolpath" trace, run-time estimate, machine travel range and safety warnings (wrap radius against nail and guide sizes, nail spacing, Z heights).
+  - G-code is plain ASCII with lines under 80 characters, and carries the woodyouloveit branding and copyright as comments.
+- **Random nail layout on Board template**, plus a **random pattern number** on both tabs. Random layouts are now seeded, so the same number always gives the same nails and a printed template matches the art.
+
+### Changed
+- Random nail layouts are now repeatable (seeded) instead of changing every time.
+- The "Board template" tab is labelled "Template" to fit three tabs.
+
 ## [4.1.0] - 2026-10-02
 
 ### Fixed

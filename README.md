@@ -17,13 +17,15 @@
 
 <p align="center">
   <a href="https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file"><img src="https://img.shields.io/badge/license-GPL--3.0-blue.svg" alt="License: GPL-3.0"></a>
-  <img src="https://img.shields.io/badge/version-4.1.0-E7004E.svg" alt="Version 4.1.0">
+  <img src="https://img.shields.io/badge/version-4.3.0-E7004E.svg" alt="Version 4.3.0">
   <img src="https://img.shields.io/badge/runs-in%20your%20browser-2B5246.svg" alt="Runs in your browser">
 </p>
 
 ![String art mode](docs/screenshot-string-art.png "String art mode")
 
-## Two tools in one
+## Four steps, one flow
+
+**1 String art → 2 Template → 3 Plotter → 4 Machine.** Generate the art once and every later step uses its board automatically; the Next buttons walk you through.
 
 ### String art
 
@@ -35,13 +37,25 @@ Print an actual-size template with every nail position and its number. Tape it t
 
 ![Board template mode](docs/screenshot-board-template.png "Board template mode")
 
+### Plotter (GRBL G-code)
+
+Let an XY plotter do the work. **Job 1** marks every nail position on the board with a pen, a Z-axis drill or a laser, optionally writing the pin numbers. **Job 2** winds the thread: a thread guide below the nail heads visits nails in the generated order and wraps each one with G2/G3 arcs. Travel moves that would clip a nail are routed round it. The preview shows the toolpath and the work zero, and **Play toolpath** traces it.
+
+### Machine (run the plotter from the browser)
+
+Connect your GRBL board over USB and run everything from the page: live status and position, jogging, work zero, homing and unlock, feed override, Job 1 and Job 2 straight from the Plotter tab (or any `.gcode` file) with pause, resume and a position-safe stop, M0 messages such as "Tie the thread to nail 1", a check-mode dry run, and a console for any command. A built-in **simulator** lets you rehearse without hardware.
+
+USB needs **Chrome or Edge on a computer**, with the page served over **https** (GitHub Pages) or **localhost**. Phones, Firefox and Safari can't open serial ports yet; the simulator still works there. Close other programs that use the port (Arduino IDE, UGS, LaserGRBL) before connecting.
+
+Before running on a machine: set work zero where the Plotter tab says (for example `G10 L20 P1 X0 Y0` at the board's bottom-left corner), run Job 1 with the pen lifted first to check the travel range, and check the wrap radius against your nail and guide sizes (the tab warns you).
+
 ## Features
 
 * **Board shapes:** Circle, Square, Landscape, Portrait (A-series 1:√2), Hexagon (flat top or pointy top), Oval (horizontal or vertical, 1:√2), or Match photo.
   * Hexagon nails are shared out side by side so every corner gets a nail. Use a nail count that's a multiple of 6 (e.g. 240 or 252) for perfectly even spacing.
   * Oval nails are spaced evenly along the curve, so they don't bunch up at the narrow ends.
   * Nails are numbered in one continuous clockwise loop around every shape.
-* **Nail layouts:** along the edge, grid, or random (random is String art only).
+* **Nail layouts:** along the edge, grid, or random. Random layouts use a **pattern number**, so the same number always gives the same nails on every tab.
 * **Original ⇄ String art flip:** the board is a two-sided card. Flip it with the toggle above the board (or press **F**) to compare your photo with the generated art.
 * **Nail numbers on screen:** every nail, every 5th or every 10th, with nail 1 in red.
 * **Board template:**
@@ -61,6 +75,8 @@ Print an actual-size template with every nail position and its number. Tape it t
 | Board template PDF | Actual-size sheet or tiled pages | Title block with logo on the sheet, logo footer on every page, PDF metadata |
 | Board template SVG | Actual-size sheet (sized in mm) | Title block with logo, title, description and comment |
 | Board template PNG | Actual-size sheet at 300 DPI (DPI embedded) | Title block with logo |
+| Nail G-code (.gcode) | GRBL job that marks every nail (pen, Z axis or laser) | Header comments |
+| Winding G-code (.gcode) | GRBL job that winds the thread in sequence | Header comments |
 
 ## Using it
 
@@ -106,6 +122,8 @@ js/brand.js              logo, websites and copyright used on the page and in ex
 js/string_art_generator.js, init.js, events.js, draw.js, constants.js   generator core
 js/shapes.js             hexagon and oval boards, nail-number overlay
 js/template.js           Board template: geometry, SVG / PNG / PDF output, tiling
+js/plotter.js            Plotter: GRBL G-code for nail plotting and thread winding
+js/machine.js            Machine: Web Serial connection, GRBL streaming, jogging, console, simulator
 js/ui.js                 page UI: tabs, flip, progress, downloads
 js/vendor/               jsPDF (MIT) for PDF export
 docs/                    logo and screenshots

@@ -57,6 +57,24 @@
         sync()
     })
 
+    // ---------- Random pattern number ----------
+    const nailsMode = document.getElementById('nails-mode-box')
+    const seedField = document.getElementById('random-seed-field')
+    const showSeed = () => seedField.hidden = nailsMode.value != 'random'
+    nailsMode.addEventListener('change', showSeed)
+    showSeed()
+
+    document.querySelectorAll('[data-seed-for]').forEach(btn => {
+        const box = document.getElementById(btn.dataset.seedFor)
+        btn.addEventListener('click', () => {
+            box.value = 1 + Math.floor(Math.random() * 99999)
+            box.dispatchEvent(new Event('change'))
+        })
+        const sync = () => btn.disabled = box.disabled
+        new MutationObserver(sync).observe(box, { attributes: true, attributeFilter: ['disabled'] })
+        sync()
+    })
+
     // ---------- Sliders show their value while dragging ----------
     document.querySelectorAll('input[type="range"][data-output]').forEach(slider => {
         const output = document.getElementById(slider.dataset.output)
@@ -90,7 +108,7 @@
     document.addEventListener('keydown', (e) => {
         if (e.key != 'f' && e.key != 'F')
             return
-        if (e.ctrlKey || e.metaKey || e.altKey || btnArt.disabled || app.classList.contains('mode-template'))
+        if (e.ctrlKey || e.metaKey || e.altKey || btnArt.disabled || currentMode() != 'art')
             return
         if (/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName) && document.activeElement.type != 'range' && document.activeElement.type != 'checkbox')
             return
@@ -134,24 +152,25 @@
 
     const saveType = document.getElementById('save-type-box')
     document.querySelectorAll('[data-save]').forEach(btn => btn.addEventListener('click', () => {
-        // "Board template…" opens the Board template tab with this art's nails
-        if (btn.dataset.save == 'template') {
-            setMode('template')
-            if (window.OpenBoardTemplate) window.OpenBoardTemplate(true)
-            return
-        }
-
         saveType.value = btn.dataset.save
         generator.Save()
     }))
 
     // ---------- Modes: String art | Board template ----------
-    const tabs = { art: document.getElementById('tab-art'), template: document.getElementById('tab-template') }
-    const panels = { art: document.getElementById('panel-art'), template: document.getElementById('panel-template') }
-    const stages = { art: document.getElementById('stage-art'), template: document.getElementById('stage-template') }
+    const MODES = ['art', 'template', 'plotter', 'machine']
+    const tabs = {}, panels = {}, stages = {}
+    for (let key of MODES) {
+        tabs[key] = document.getElementById('tab-' + key)
+        panels[key] = document.getElementById('panel-' + key)
+        stages[key] = document.getElementById('stage-' + key)
+    }
+
+    function currentMode() {
+        return MODES.find(key => tabs[key].getAttribute('aria-selected') == 'true') || 'art'
+    }
 
     function setMode(mode) {
-        for (let key of ['art', 'template']) {
+        for (let key of MODES) {
             let on = key == mode
             tabs[key].setAttribute('aria-selected', on)
             tabs[key].tabIndex = on ? 0 : -1
@@ -160,24 +179,34 @@
         }
 
         app.classList.toggle('mode-template', mode == 'template')
+        app.classList.toggle('mode-plotter', mode == 'plotter')
+        app.classList.toggle('mode-machine', mode == 'machine')
         document.dispatchEvent(new CustomEvent('stringart:mode', { detail: { mode: mode } }))
     }
 
-    tabs.art.addEventListener('click', () => setMode('art'))
-    tabs.template.addEventListener('click', () => setMode('template'))
+    for (let key of MODES)
+        tabs[key].addEventListener('click', () => setMode(key))
 
-    // Arrow keys move between the two tabs
+    // "Next" buttons walk through the steps: String art → Template → Plotter → Machine
+    document.querySelectorAll('[data-next]').forEach(btn => btn.addEventListener('click', () => {
+        setMode(btn.dataset.next)
+        document.querySelector('.stage').scrollTop = 0
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }))
+
+    // Arrow keys move between the tabs
     document.querySelector('.mode-tabs').addEventListener('keydown', (e) => {
         if (e.key != 'ArrowLeft' && e.key != 'ArrowRight')
             return
-        let next = app.classList.contains('mode-template') ? 'art' : 'template'
+        let i = MODES.indexOf(currentMode())
+        let next = MODES[(i + (e.key == 'ArrowRight' ? 1 : MODES.length - 1)) % MODES.length]
         setMode(next)
         tabs[next].focus()
     })
 
     // Choosing a photo always happens on the String art tab
     document.getElementById('select-btn').addEventListener('click', () => {
-        if (app.classList.contains('mode-template'))
+        if (currentMode() != 'art')
             setMode('art')
     })
 

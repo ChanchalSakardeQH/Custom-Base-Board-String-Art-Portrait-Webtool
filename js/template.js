@@ -115,7 +115,7 @@ function TemplateNailBox(shape, w, h, inset) {
 }
 
 // A throwaway generator, never shown, used only to run the real nail-placement code
-function MakeTemplateGenerator(shape, layout, count, canvasSize) {
+function MakeTemplateGenerator(shape, layout, count, canvasSize, seed = 1) {
     let g = Object.create(StringArtGenerator.prototype)
     g.width = g.height = canvasSize
     g.x0 = g.y0 = canvasSize / 2
@@ -124,6 +124,7 @@ function MakeTemplateGenerator(shape, layout, count, canvasSize) {
     g.formTypeBox = { value: shape }
     g.nailsModeBox = { value: layout }
     g.nailsCountBox = { value: count }
+    g.randomSeedBox = { value: seed }
     g.imgWidth = g.imgHeight = canvasSize
     g.imgX = g.imgY = 0
     g.imgScale = 1
@@ -131,6 +132,8 @@ function MakeTemplateGenerator(shape, layout, count, canvasSize) {
 
     if (layout == GRID_MODE)
         g.nails = g.InitGridNails(count)
+    else if (layout == RANDOM_MODE)
+        g.nails = g.InitGridRandom(count)
     else
         g.nails = g.InitBorderNails(count)
 
@@ -247,7 +250,7 @@ function BuildTemplate(opts) {
         shape = opts.shape
         layout = opts.layout
         let size = opts.generator && opts.generator.width ? opts.generator.width : 1000
-        g = MakeTemplateGenerator(shape, layout, opts.count, size)
+        g = MakeTemplateGenerator(shape, layout, opts.count, size, opts.seed || 1)
     }
 
     let board = TemplateBoardSize(shape, opts.size, imageAspect)
@@ -796,8 +799,14 @@ async function TemplateToPDF(m, paperKey, unit) {
 
     const state = {
         source: 'custom', shape: CIRCLE_FORM, layout: BORDER_MODE, count: 250,
-        size: 400, inset: 10, unit: 'mm', step: 1, paper: 'sheet'
+        size: 400, inset: 10, unit: 'mm', step: 1, paper: 'sheet', seed: 1
     }
+    const seedBox = document.getElementById('tpl-seed')
+    seedBox.addEventListener('change', () => {
+        state.seed = Math.max(1, Math.round(readNumber(seedBox, 1, 99999, state.seed)))
+        seedBox.value = state.seed
+        refresh()
+    })
 
     // Shape chips: reuse the String art icons, minus "Match photo" (there is no photo here)
     const artShapes = document.querySelector('[data-chips-for="form-type-box"]')
@@ -886,8 +895,12 @@ async function TemplateToPDF(m, paperKey, unit) {
 
         model = BuildTemplate({
             source: state.source, shape: state.shape, layout: state.layout, count: state.count,
-            size: state.size, inset: state.inset, step: state.step, generator: generator
+            size: state.size, inset: state.inset, step: state.step, seed: state.seed, generator: generator
         })
+        document.getElementById('tpl-seed-field').hidden = fromArt || model.layout != RANDOM_MODE
+        document.getElementById('tpl-source-note').textContent = fromArt ?
+            `Using your string art: ${TEMPLATE_SHAPE_NAMES[model.shape]}, ${model.count} nails ${TEMPLATE_LAYOUT_NAMES[model.layout] || ''}. Just set the real board size below.` :
+            'Custom board: pick any shape and number of nails.'
 
         // Controls follow the model (in "from string art" mode they show the art's settings, locked)
         markPressed(document.getElementById('tpl-source'), state.source)
@@ -935,6 +948,16 @@ async function TemplateToPDF(m, paperKey, unit) {
 
         preview.innerHTML = out.toString(false).replace(/^<\?xml[^>]*>\s*/, '')
         fitPreview()
+
+        // The Plotter tab works from this same board
+        document.dispatchEvent(new CustomEvent('stringart:template', { detail: { model: model, state: state } }))
+    }
+
+    window.GetBoardTemplate = () => ({ model: model, state: state, hasArt: hasArt() })
+
+    window.SetBoardTemplateSource = function(source) {
+        state.source = source
+        refresh()
     }
 
     // Scale the preview sheet to fit the stage at its true proportions
@@ -977,12 +1000,26 @@ async function TemplateToPDF(m, paperKey, unit) {
     }))
 
     // Keep "from string art" in step with the generator
-    for (let name of ['imageloaded', 'stop', 'reset'])
-        document.addEventListener('stringart:' + name, () => { if (app.classList.contains('mode-template')) refresh() })
+    // One flow: as soon as there is string art, Template (and so Plotter) use its board automatically.
+    // The custom settings are kept in step too, so switching to "Custom board" starts from the same board.
+    function adoptArt() {
+        if (!generator || !generator.nails) return
+        state.source = 'art'
+        if (generator.formType != IMAGE_FORM) state.shape = generator.formType
+        state.layout = generator.nailsModeBox.value
+        state.count = +generator.nailsCountBox.value
+        state.seed = generator.GetRandomSeed()
+        refresh()
+    }
 
-    document.getElementById('form-type-box').addEventListener('change', () => { if (state.source == 'art') refresh() })
-    document.getElementById('nails-mode-box').addEventListener('change', () => { if (state.source == 'art') refresh() })
-    document.getElementById('nails-count-box').addEventListener('change', () => { if (state.source == 'art') refresh() })
+    document.addEventListener('stringart:imageloaded', adoptArt)
+    document.addEventListener('stringart:start', adoptArt)        // every new run takes over again
+    for (let name of ['stop', 'reset'])
+        document.addEventListener('stringart:' + name, () => refresh())
+
+    for (let id of ['form-type-box', 'nails-mode-box', 'nails-count-box', 'random-seed-box'])
+        document.getElementById(id).addEventListener('change', () => { if (state.source == 'art') adoptArt() })
+
 
     // Opened from the String art export row: template of the current art
     window.OpenBoardTemplate = function(fromArt) {
@@ -991,7 +1028,8 @@ async function TemplateToPDF(m, paperKey, unit) {
         refresh()
     }
 
-    document.addEventListener('stringart:mode', (e) => { if (e.detail.mode == 'template') refresh() })
+    document.addEventListener('stringart:mode', (e) => { if (e.detail.mode != 'art') refresh() })
+
 
     writeSizes()
     countBox.value = state.count

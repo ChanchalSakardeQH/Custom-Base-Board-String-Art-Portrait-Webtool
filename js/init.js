@@ -110,6 +110,12 @@ StringArtGenerator.prototype.InitControls = function() {
     this.nailsCountBox = document.getElementById('nails-count-box')
     this.nailsCountBox.addEventListener('change', () => this.InitNails())
 
+    this.randomSeedBox = document.getElementById('random-seed-box')
+    this.randomSeedBox.addEventListener('change', () => {
+        this.randomSeedBox.value = this.GetRandomSeed()
+        this.InitNails()
+    })
+
     this.nailNumbersBox = document.getElementById('nail-numbers-box')
     this.nailNumbersBox.addEventListener('change', () => this.DrawNailNumbers())
 
@@ -144,6 +150,7 @@ StringArtGenerator.prototype.InitControls = function() {
         this.formTypeBox,
         this.nailsModeBox,
         this.nailsCountBox,
+        this.randomSeedBox,
         this.linesCountBox,
         this.linesWeightBox,
         this.linesColorBox,
@@ -312,16 +319,34 @@ StringArtGenerator.prototype.InitGridNails = function(nailsCount) {
     return nails
 }
 
+// Seeded random numbers (mulberry32). Random nail layouts use a "pattern number" as the seed,
+// so a printed board template and the string art generator agree on where every nail goes.
+function SeededRandom(seed) {
+    let a = (seed * 2654435761) >>> 0
+    return function() {
+        a = (a + 0x6D2B79F5) | 0
+        let t = Math.imul(a ^ (a >>> 15), 1 | a)
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+    }
+}
+
+StringArtGenerator.prototype.GetRandomSeed = function() {
+    let v = Math.round(+(this.randomSeedBox ? this.randomSeedBox.value : 1))
+    return isFinite(v) && v >= 1 ? v : 1
+}
+
 StringArtGenerator.prototype.InitGridRandom = function(nailsCount) {
     let nails = []
     let outline = this.IsOutlineForm() ? this.GetShapeOutline(0) : null
+    let random = SeededRandom(this.GetRandomSeed())     // same pattern number -> same nails, every time
 
     for (let i = 0; i < nailsCount; i++) {
         let x, y
 
         if (this.formType == CIRCLE_FORM) {
-            let t = Math.random() * 2 * Math.PI
-            let radius = this.radius * Math.sqrt(Math.random())
+            let t = random() * 2 * Math.PI
+            let radius = this.radius * Math.sqrt(random())
 
             x = (this.imgBbox.xmin + this.imgBbox.xmax) / 2 + radius * Math.cos(t)
             y = (this.imgBbox.ymin + this.imgBbox.ymax) / 2 + radius * Math.sin(t)
@@ -329,13 +354,13 @@ StringArtGenerator.prototype.InitGridRandom = function(nailsCount) {
         else if (outline) {
             // Keep drawing random points until one lands inside the hexagon / oval
             do {
-                x = this.imgBbox.xmin + Math.random() * (this.imgBbox.xmax - this.imgBbox.xmin)
-                y = this.imgBbox.ymin + Math.random() * (this.imgBbox.ymax - this.imgBbox.ymin)
+                x = this.imgBbox.xmin + random() * (this.imgBbox.xmax - this.imgBbox.xmin)
+                y = this.imgBbox.ymin + random() * (this.imgBbox.ymax - this.imgBbox.ymin)
             } while (!this.IsInsidePolygon(x, y, outline))
         }
         else {
-            x = this.imgBbox.xmin + Math.random() * (this.imgBbox.xmax - this.imgBbox.xmin)
-            y = this.imgBbox.ymin + Math.random() * (this.imgBbox.ymax - this.imgBbox.ymin)
+            x = this.imgBbox.xmin + random() * (this.imgBbox.xmax - this.imgBbox.xmin)
+            y = this.imgBbox.ymin + random() * (this.imgBbox.ymax - this.imgBbox.ymin)
         }
 
         nails.push({
