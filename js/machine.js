@@ -690,7 +690,9 @@ function ParseToolpath(text) {
 
     const hasSerial = 'serial' in navigator
     let kind = hasSerial ? 'serial' : 'sim'
-    let jogStep = 10
+    let jogStep = 10              // mm
+    let jogFeed = 1500            // mm/min
+    let jobDone = { nails: false, wind: false }
     let job = null            // { name, text, parsed }
     let jobKind = 'nails'
     let fileJob = null
@@ -740,10 +742,10 @@ function ParseToolpath(text) {
         badge.textContent = s.state.split(':')[0]
         badge.className = 'mc-state st-' + stateClass(s.state)
         ;['x', 'y', 'z'].forEach((a, i) => {
-            $('mc-w' + a).textContent = s.wpos[i].toFixed(2)
-            $('mc-m' + a).textContent = s.mpos[i].toFixed(2)
+            $('mc-w' + a).textContent = Units.num(s.wpos[i], 'pos')
+            $('mc-m' + a).textContent = Units.num(s.mpos[i], 'pos')
         })
-        $('mc-feed').textContent = Math.round(s.feed)
+        $('mc-feed').textContent = Units.num(s.feed, 'speed')
         $('mc-ov').textContent = s.ov[0] + '%'
         $('mc-ov-side').textContent = s.ov[0] + '%'
 
@@ -806,16 +808,34 @@ function ParseToolpath(text) {
         $('mc-stop').disabled = !running
         document.querySelectorAll('#mc-job [data-value]').forEach(b => b.disabled = running || (b.dataset.value == 'wind' && !windAvailable))
         $('mc-check').disabled = running
+        paintNav()
     }
 
     // ---------- Jogging ----------
-    document.querySelectorAll('#mc-step [data-value]').forEach(b => b.addEventListener('click', () => {
-        jogStep = +b.dataset.value
-        document.querySelectorAll('#mc-step [data-value]').forEach(x => x.setAttribute('aria-pressed', x == b))
+    // Jog steps that make sense in each unit (stored in mm)
+    const JOG_STEPS = { mm: [0.1, 1, 10, 50], cm: [0.01, 0.1, 1, 5], in: [0.01, 0.1, 1, 2] }
+    let jogIndex = 2
+
+    function paintSteps() {
+        let steps = JOG_STEPS[Units.unit]
+        document.querySelectorAll('#mc-step [data-value]').forEach((b, i) => {
+            b.textContent = steps[i]
+            b.dataset.value = Units.to(steps[i])
+            b.setAttribute('aria-pressed', i == jogIndex)
+        })
+        jogStep = Units.to(steps[jogIndex])
+    }
+
+    document.querySelectorAll('#mc-step [data-value]').forEach((b, i) => b.addEventListener('click', () => {
+        jogIndex = i
+        paintSteps()
     }))
 
+    Units.bind($('mc-jog-feed'), () => jogFeed, (v) => jogFeed = v, 'speed', 10, 20000)
+    paintSteps()
+
     function jog(dx, dy, dz) {
-        let feed = Math.max(10, +$('mc-jog-feed').value || 1000)
+        let feed = jogFeed
         let parts = []
         if (dx) parts.push('X' + (dx * jogStep).toFixed(3))
         if (dy) parts.push('Y' + (dy * jogStep).toFixed(3))
@@ -931,7 +951,7 @@ function ParseToolpath(text) {
         else {
             let b = job.parsed.bounds
             $('mc-job-info').innerHTML = `<b>${job.name}</b><br>${job.parsed.stream.length.toLocaleString('en')} lines` +
-                (job.est ? ` · about ${fmtTime(job.est)}` : '') + ` · X ${b.x0.toFixed(0)} to ${b.x1.toFixed(0)}, Y ${b.y0.toFixed(0)} to ${b.y1.toFixed(0)} mm`
+                (job.est ? ` · about ${fmtTime(job.est)}` : '') + ` · X ${Units.num(b.x0, 'size')} to ${Units.num(b.x1, 'size')}, Y ${Units.num(b.y0, 'size')} to ${Units.fmt(b.y1, 'size')}`
         }
         drawPreview()
         updateJob()
@@ -980,6 +1000,7 @@ function ParseToolpath(text) {
 
         if (j.state == 'done' && !j.announced) {
             j.announced = true
+            if (!j.check && (jobKind == 'nails' || jobKind == 'wind')) jobDone[jobKind] = true
             log(j.check ? `Check finished: ${j.errors ? j.errors + ' problem lines (see above)' : 'no errors'}.` : `${j.name} finished.`, j.errors ? 'error' : 'msg')
             if (!j.check) showBanner(`${j.name} finished.`, 'done')
         }
@@ -1012,6 +1033,7 @@ function ParseToolpath(text) {
             `<g class="pl-origin" stroke-width="${r(sw * 2)}"><line x1="0" y1="0" x2="${r(L)}" y2="0" /><line x1="0" y1="0" x2="0" y2="${r(-L)}" />` +
             `<text x="${r(L + sw * 3)}" y="${r(sw * 5)}" font-size="${r(L * 0.3)}">X</text><text x="${r(-sw * 3)}" y="${r(-L)}" font-size="${r(L * 0.3)}" text-anchor="end">Y</text></g>` +
             `<g id="mc-head" class="mc-head"><circle r="${r(sw * 7)}" /><line x1="${r(-sw * 14)}" x2="${r(sw * 14)}" /><line y1="${r(-sw * 14)}" y2="${r(sw * 14)}" /></g>` +
+            `<image href="${LOGO_DATA_URL}" x="${r(b.x1 + pad * 0.9 - Math.max(w, h) * 0.22)}" y="${r(-b.y0 + pad * 0.9 - Math.max(w, h) * 0.22 / BRAND.logoAspect)}" width="${r(Math.max(w, h) * 0.22)}" height="${r(Math.max(w, h) * 0.22 / BRAND.logoAspect)}" opacity="0.9" />` +
             `</svg>`
         view = { sw: sw }
         updateHead()
@@ -1043,6 +1065,26 @@ function ParseToolpath(text) {
     document.addEventListener('stringart:template', () => { if (app.classList.contains('mode-machine') && !(grbl.job && grbl.job.state == 'running') && jobKind != 'file') loadJob() })
 
     window.OpenMachineJob = (kindName) => { jobKind = kindName; loadJob() }
+
+    // ---------- Previous / Next: Job 1 (nails) then Job 2 (winding) ----------
+    $('mc-prev').addEventListener('click', () => { jobKind = 'nails'; loadJob() })
+    $('mc-next').addEventListener('click', () => { jobKind = 'wind'; loadJob() })
+
+    function paintNav() {
+        let running = grbl.job && ['running', 'stopping', 'error'].includes(grbl.job.state)
+        $('mc-job-nav').hidden = !grbl.connected
+        $('mc-prev').disabled = running || jobKind == 'nails'
+        $('mc-next').disabled = running || jobKind == 'wind' || !windAvailable
+        $('mc-next').title = windAvailable ? '' : 'Generate string art first'
+        $('mc-next').classList.toggle('pulse', jobDone.nails && jobKind == 'nails' && windAvailable && !running)
+        $('mc-job-step').textContent = jobKind == 'nails' ? 'Step 1 of 2: nails' : jobKind == 'wind' ? 'Step 2 of 2: winding' : 'Your own file'
+    }
+
+    document.addEventListener('stringart:units', () => {
+        paintSteps()
+        showStatus()
+        if (job) loadJob()
+    })
 
     update()
     showStatus()

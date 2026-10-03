@@ -38,6 +38,13 @@ const PLOTTER_DEFAULTS = {
     view: 'nails'
 }
 
+// Allowed range of each length / speed setting, in mm or mm/min (inputs show the page's units)
+const PLOTTER_LIMITS = {
+    offX: [-5000, 5000], offY: [-5000, 5000], zUp: [-100, 200], zDown: [-50, 100], markSize: [0.2, 20],
+    windZ: [-50, 200], safeZ: [-50, 300], nailDia: [0.3, 10], guideDia: [0.2, 10], wrapR: [0.5, 20],
+    travelFeed: [100, 20000], plungeFeed: [10, 5000], drawFeed: [10, 20000], windFeed: [10, 20000]
+}
+
 // ================= Single-stroke digits (a 4 x 6 grid, y down) for writing pin numbers =================
 
 const PLOTTER_DIGITS = {
@@ -452,14 +459,27 @@ function BuildWinding(model, sequence, cfg) {
 
     const save = () => { try { localStorage.setItem('stringart-plotter', JSON.stringify(cfg)) } catch (e) { } }
 
-    // Number / text inputs: data-key names the setting
-    panel.querySelectorAll('[data-key]').forEach(input => {
+    // Number / text inputs: data-key names the setting; data-dim marks lengths and speeds (shown in page units)
+    const showInput = (input) => {
         let key = input.dataset.key
         if (input.type == 'checkbox') input.checked = !!cfg[key]
+        else if (input.dataset.dim) input.value = Units.num(cfg[key], input.dataset.dim == 'speed' ? 'speed' : 'fine')
         else input.value = cfg[key]
+    }
+
+    panel.querySelectorAll('[data-key]').forEach(input => {
+        let key = input.dataset.key
+        showInput(input)
 
         input.addEventListener('change', () => {
             if (input.type == 'checkbox') cfg[key] = input.checked
+            else if (input.dataset.dim) {
+                let v = parseFloat(input.value)
+                let mm = isFinite(v) ? Units.to(v) : PLOTTER_DEFAULTS[key]
+                let [lo, hi] = PLOTTER_LIMITS[key]
+                cfg[key] = Math.min(hi, Math.max(lo, mm))
+                showInput(input)
+            }
             else if (input.type == 'number') {
                 let v = parseFloat(input.value)
                 if (!isFinite(v)) v = PLOTTER_DEFAULTS[key]
@@ -490,10 +510,7 @@ function BuildWinding(model, sequence, cfg) {
 
     document.getElementById('plotter-reset').addEventListener('click', () => {
         cfg = Object.assign({}, PLOTTER_DEFAULTS, { view: cfg.view })
-        panel.querySelectorAll('[data-key]').forEach(input => {
-            if (input.type == 'checkbox') input.checked = !!cfg[input.dataset.key]
-            else input.value = cfg[input.dataset.key]
-        })
+        panel.querySelectorAll('[data-key]').forEach(showInput)
         save(); refresh()
     })
 
@@ -545,7 +562,7 @@ function BuildWinding(model, sequence, cfg) {
 
         let shape = TEMPLATE_SHAPE_NAMES[model.shape]
         summary.innerHTML = `<b>${shape}</b>, ${model.count} nails ${TEMPLATE_LAYOUT_NAMES[model.layout] || ''}<br>` +
-            `${Math.round(model.board.w)} × ${Math.round(model.board.h)} mm, nails ${Math.round(model.inset)} mm from edge, ${model.spacing.toFixed(1)} mm apart`
+            `${Units.pair(model.board.w, model.board.h)}, nails ${Units.fmt(model.inset)} from edge, ${Units.fmt(model.spacing)} apart`
 
         let ready = sequenceReady(t)
         windBtn.disabled = !ready
@@ -577,23 +594,26 @@ function BuildWinding(model, sequence, cfg) {
         info.innerHTML =
             `<span class="stat"><b>${lineCount.toLocaleString('en')}</b> G-code lines</span>` +
             `<span class="stat"><b>~${fmtTime(job.time)}</b> run time</span>` +
-            `<span class="stat"><b>${(job.drawLen / 1000).toFixed(1)} m</b> ${cfg.view == 'wind' ? 'guide path' : 'drawn'}</span>` +
-            `<span class="stat">X ${b.x0.toFixed(0)} to ${b.x1.toFixed(0)}, Y ${b.y0.toFixed(0)} to ${b.y1.toFixed(0)} mm</span>`
+            `<span class="stat"><b>${Units.long(job.drawLen)}</b> ${cfg.view == 'wind' ? 'guide path' : 'drawn'}</span>` +
+            `<span class="stat">X ${Units.num(b.x0, 'size')} to ${Units.num(b.x1, 'size')}, Y ${Units.num(b.y0, 'size')} to ${Units.fmt(b.y1, 'size')}</span>`
 
         let warnings = []
         let lim = PlotterWindingLimits(model, cfg)
         if (cfg.wrapR < lim.min)
-            warnings.push(`Wrap radius ${cfg.wrapR} mm is too small: the guide would touch the nail. Use at least ${lim.min.toFixed(1)} mm.`)
+            warnings.push(`Wrap radius ${Units.fmt(cfg.wrapR)} is too small: the guide would touch the nail. Use at least ${Units.fmt(lim.min)}.`)
         if (cfg.wrapR > lim.max)
             warnings.push(lim.max > lim.min ?
-                `Wrap radius ${cfg.wrapR} mm is too big for nails ${model.spacing.toFixed(1)} mm apart: the guide would hit neighbouring nails. Use at most ${lim.max.toFixed(1)} mm.` :
-                `Nails ${model.spacing.toFixed(1)} mm apart leave no room for this nail and guide size. Use fewer nails, a bigger board, or a thinner guide.`)
+                `Wrap radius ${Units.fmt(cfg.wrapR)} is too big for nails ${Units.fmt(model.spacing)} apart: the guide would hit neighbouring nails. Use at most ${Units.fmt(lim.max)}.` :
+                `Nails ${Units.fmt(model.spacing)} apart leave no room for this nail and guide size. Use fewer nails, a bigger board, or a thinner guide.`)
+        let area = window.GetBoardTemplate ? window.GetBoardTemplate().state : null
+        if (area && (b.x1 - b.x0 > area.areaX + 0.01 || b.y1 - b.y0 > area.areaY + 0.01))
+            warnings.push(`This job spans ${Units.pair(b.x1 - b.x0, b.y1 - b.y0)}, more than your ${Units.pair(area.areaX, area.areaY)} plotter area (set on the Template tab).`)
         if (model.layout != BORDER_MODE && !cfg.useZ)
             warnings.push('Grid and random layouts have nails across the board: turn on the Z axis so the guide can lift over them.')
         if (cfg.useZ && cfg.windZ >= cfg.safeZ)
             warnings.push('Winding Z must be lower than the safe Z.')
         if (cfg.numbers != 'off' && cfg.tool == 'z' && cfg.zDown < 0)
-            warnings.push(`Pin numbers are written at Z down (${cfg.zDown} mm): fine for a pen or engraving bit, but turn numbers off when drilling pilot holes.`)
+            warnings.push(`Pin numbers are written at Z down (${Units.fmt(cfg.zDown)}): fine for a pen or engraving bit, but turn numbers off when drilling pilot holes.`)
         if (cfg.numbers != 'off' && model.fs < 2)
             warnings.push('Nails are close together, so plotted numbers may overlap. Try "Every 5" or "Every 10".')
         if (!ready)
@@ -639,6 +659,10 @@ function BuildWinding(model, sequence, cfg) {
             `<text x="${r(ox + L + sw * 4)}" y="${r(oy + sw * 5)}" font-size="${r(L * 0.35)}">X</text>` +
             `<text x="${r(ox - sw * 4)}" y="${r(oy + ySign * (L + sw * 4) + (ySign < 0 ? 0 : L * 0.3))}" font-size="${r(L * 0.35)}" text-anchor="end">Y</text></g>`)
 
+        // Brand mark in the corner of the preview sheet
+        let logoW = Math.min(W * 0.3, 90), logoH = logoW / BRAND.logoAspect
+        parts.push(`<image href="${LOGO_DATA_URL}" x="${r(W + pad * 0.5 - logoW)}" y="${r(H + pad * 0.5 - logoH)}" width="${r(logoW)}" height="${r(logoH)}" opacity="0.9" />`)
+
         preview.innerHTML = `<svg viewBox="${r(-pad * 0.6)} ${r(-pad * 0.6)} ${r(W + pad * 1.2)} ${r(H + pad * 1.2)}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Toolpath preview">${parts.join('')}</svg>`
         fitPreview()
     }
@@ -680,6 +704,7 @@ function BuildWinding(model, sequence, cfg) {
     })
 
     document.addEventListener('stringart:template', refresh)
+    document.addEventListener('stringart:units', () => { panel.querySelectorAll('[data-key][data-dim]').forEach(showInput); refresh() })
     document.addEventListener('stringart:mode', (e) => { if (e.detail.mode == 'plotter') refresh() })
     for (let name of ['stop', 'reset', 'imageloaded'])
         document.addEventListener('stringart:' + name, refresh)

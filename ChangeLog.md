@@ -7,6 +7,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 Copyright © 2026 Chanchal Sakarde · [woodyouloveit.com](https://woodyouloveit.com) · [wooduloveit.com](https://wooduloveit.com) · [GPL-3.0 License](https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file)
 
+## [4.4.0] - 2026-10-03
+
+### Added
+- **Units for the whole page:** mm (default), cm or inch in the top bar. Every length, speed and position on every tab converts live: board size, plotter area, inset, plotter settings, warnings and statistics, jog steps and speed, machine positions and job sizes. The choice is remembered; G-code still runs in mm.
+- **XY plotter workable area** on Template → Size. The board size is a slider that can't exceed the area for the chosen shape; a board that no longer fits after a shape or area change is reduced automatically, with a note.
+- **Machine tab: ← Previous / Next →** between Job 1 (nails) and Job 2 (winding) once connected; Next pulses after Job 1 finishes.
+- **Branding on every canvas:** a brand strip under the string art board (matching the exported PNG footer) and the logo in the Plotter and Machine previews.
+- **User guide** (`docs/GUIDE.md`) with fresh desktop and mobile screenshots of every step in `docs/screenshots/`.
+
+### Changed
+- The top-right **Choose image** button is gone; the units switch takes its place. Change the photo with **Choose photo…** in the Photo section.
+- When the art is finished, **Generate becomes "Next: Template →"**. Pause still offers **Continue**.
+- The **number of lines** is locked once a run starts (Reset to change it).
+- **Download** buttons use a light "paper" style; every **Next** button is marigold.
+
+### Fixed
+- **Continue after Pause drew the full number of lines again** (pausing at 157 of 1,200 and continuing ended at 1,357). It now finishes the run exactly.
+
 ## [4.3.0] - 2026-10-03
 
 ### Added

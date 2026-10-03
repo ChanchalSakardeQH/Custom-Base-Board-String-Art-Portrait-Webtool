@@ -238,7 +238,9 @@ StringArtGenerator.prototype.Reset = function(needResetImage = true) {
     this.infoBox.innerHTML = this.GetActions()
     this.isGenerating = false
     this.isLineDrawing = false
+    this.finished = false
     this.generateBtn.value = 'Generate'
+    this.generateBtn.classList.remove('is-next')
     this.Notify('reset')
 
     for (let control of this.controls)
@@ -278,12 +280,16 @@ StringArtGenerator.prototype.StartGenerate = function() {
 StringArtGenerator.prototype.EndGenerate = function() {
     this.saveBox.style.display = ''
     this.isGenerating = false
-    this.generateBtn.value = this.isLineDrawing ? 'Continue' : 'Generate'
+
+    // Finished: the button moves the user on to the next step. Paused: it continues this run.
+    // The number of lines is fixed once a run starts (Reset to change it).
+    this.finished = this.sequence.length - 1 >= this.targetLines
+    this.generateBtn.value = this.finished ? 'Next: Template →' : 'Continue'
+    this.generateBtn.classList.toggle('is-next', this.finished)
 
     this.resetBtn.removeAttribute('disabled')
     this.selectBtn.removeAttribute('disabled')
-    this.linesCountBox.removeAttribute('disabled')
-    this.Notify('stop', { lines: this.sequence.length - 1 })
+    this.Notify('stop', { lines: this.sequence.length - 1, finished: this.finished })
 }
 
 StringArtGenerator.prototype.GenerateIteration = function(nail, linesCount, totalCount, lineWeight, lineColor, startTime) {
@@ -304,10 +310,20 @@ StringArtGenerator.prototype.GenerateIteration = function(nail, linesCount, tota
 }
 
 StringArtGenerator.prototype.Generate = function() {
+    if (this.finished) {
+        this.Notify('next')            // "Next: Template →"
+        return
+    }
+
+    if (!this.isLineDrawing)
+        this.targetLines = +this.linesCountBox.value
+
     if (!this.StartGenerate())
         return
 
-    let linesCount = +this.linesCountBox.value
+    // A fresh run draws the chosen number of lines; Continue draws only what is left of it
+    let linesCount = this.targetLines - Math.max(0, this.sequence.length - 1)
+    let totalCount = this.targetLines
     let lineWeight = this.GetLineWeight()
     let lineColor = this.GetLineColor()
     let startTime = performance.now()
@@ -316,7 +332,7 @@ StringArtGenerator.prototype.Generate = function() {
     // (it is popped here and pushed back by the first iteration).
     let startNail = this.sequence.length > 0 ? this.sequence.pop() : 0
 
-    this.GenerateIteration(startNail, linesCount, linesCount, lineWeight, lineColor, startTime)
+    this.GenerateIteration(startNail, linesCount, totalCount, lineWeight, lineColor, startTime)
 }
 
 StringArtGenerator.prototype.ToStringArt = function() {

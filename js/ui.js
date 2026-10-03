@@ -210,6 +210,13 @@
             setMode('art')
     })
 
+    // Generate → "Next: Template →" when the art is finished
+    document.addEventListener('stringart:next', () => setMode('template'))
+
+    // ---------- Units: one setting for the whole page ----------
+    document.querySelectorAll('#unit-switch [data-value]').forEach(b => b.addEventListener('click', () => Units.set(b.dataset.value)))
+    Units.paint()
+
     setMode('art')
 
     // ---------- Empty state: a little hexagon board threads itself once on load ----------

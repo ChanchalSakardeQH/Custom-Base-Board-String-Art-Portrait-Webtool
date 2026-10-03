@@ -319,7 +319,7 @@ function TemplateFormatMm(mm, unit) {
 
 // Nail spacing needs more precision than board sizes
 function TemplateFormatSpacing(mm, unit) {
-    return unit == 'in' ? `${(mm / 25.4).toFixed(3)} in` : `${mm.toFixed(1)} mm`
+    return unit == 'in' ? `${(mm / 25.4).toFixed(3)} in` : unit == 'cm' ? `${(mm / 10).toFixed(2)} cm` : `${mm.toFixed(1)} mm`
 }
 
 function TemplateDescription(m, unit = 'mm') {
@@ -799,8 +799,15 @@ async function TemplateToPDF(m, paperKey, unit) {
 
     const state = {
         source: 'custom', shape: CIRCLE_FORM, layout: BORDER_MODE, count: 250,
-        size: 400, inset: 10, unit: 'mm', step: 1, paper: 'sheet', seed: 1
+        size: 400, inset: 10, step: 1, paper: 'sheet', seed: 1,
+        areaX: 450, areaY: 450          // XY plotter workable area (mm); the board must fit inside it
     }
+    try {
+        let a = JSON.parse(localStorage.getItem('stringart-area') || 'null')
+        if (a && a.x > 0 && a.y > 0) { state.areaX = a.x; state.areaY = a.y }
+    } catch (e) { }
+    const saveArea = () => { try { localStorage.setItem('stringart-area', JSON.stringify({ x: state.areaX, y: state.areaY })) } catch (e) { } }
+    let fitMessage = ''
     const seedBox = document.getElementById('tpl-seed')
     seedBox.addEventListener('change', () => {
         state.seed = Math.max(1, Math.round(readNumber(seedBox, 1, 99999, state.seed)))
@@ -839,34 +846,26 @@ async function TemplateToPDF(m, paperKey, unit) {
     segmented(document.getElementById('tpl-step'), 'step')
     segmented(document.getElementById('tpl-paper'), 'paper')
     segmented(document.getElementById('tpl-source'), 'source')
-    segmented(document.getElementById('tpl-unit'), 'unit', () => writeSizes())
 
-    function unitDigits() { return state.unit == 'mm' ? 0 : state.unit == 'cm' ? 1 : 2 }
-
-    function writeSizes() {
-        let k = TEMPLATE_UNITS[state.unit]
-        sizeBox.value = (state.size / k).toFixed(unitDigits())
-        insetBox.value = (state.inset / k).toFixed(unitDigits())
-        sizeBox.step = insetBox.step = state.unit == 'mm' ? 1 : state.unit == 'cm' ? 0.1 : 0.05
-        document.querySelectorAll('.tpl-unit-label').forEach(el => el.textContent = state.unit)
-    }
 
     function readNumber(box, min, max, fallback) {
         let v = parseFloat(box.value)
         return isFinite(v) ? Math.min(max, Math.max(min, v)) : fallback
     }
 
-    sizeBox.addEventListener('change', () => {
-        state.size = readNumber(sizeBox, 1, 1e6, state.size / TEMPLATE_UNITS[state.unit]) * TEMPLATE_UNITS[state.unit]
-        state.size = Math.min(3000, Math.max(80, state.size))
-        writeSizes(); refresh()
+    // Plotter area, inset and board size are kept in mm and shown in the page's units
+    Units.bind(document.getElementById('tpl-area-x'), () => state.areaX, (v) => { state.areaX = v; fitMessage = ''; saveArea(); refresh() }, 'size', 100, 5000)
+    Units.bind(document.getElementById('tpl-area-y'), () => state.areaY, (v) => { state.areaY = v; fitMessage = ''; saveArea(); refresh() }, 'size', 100, 5000)
+    Units.bind(insetBox, () => state.inset, (v) => { state.inset = v; refresh() }, 'fine', 2, 100)
+
+    sizeBox.addEventListener('input', () => {
+        state.size = +sizeBox.value
+        fitMessage = ''
+        document.getElementById('tpl-size-value').textContent = Units.fmt(state.size, 'size')
+        refresh()
     })
 
-    insetBox.addEventListener('change', () => {
-        state.inset = readNumber(insetBox, 0, 1e6, state.inset / TEMPLATE_UNITS[state.unit]) * TEMPLATE_UNITS[state.unit]
-        state.inset = Math.min(100, Math.max(2, state.inset))
-        writeSizes(); refresh()
-    })
+    document.addEventListener('stringart:units', () => refresh())
 
     countBox.addEventListener('change', () => {
         state.count = Math.round(readNumber(countBox, 20, 1000, state.count))
@@ -893,6 +892,25 @@ async function TemplateToPDF(m, paperKey, unit) {
 
         let fromArt = state.source == 'art'
 
+        // The board has to fit the plotter: limit the size for this shape
+        let shapeNow = fromArt ? generator.formType : state.shape
+        let aspect = fromArt && shapeNow == IMAGE_FORM ? generator.imgWidth / generator.imgHeight : 1
+        let unitBoard = TemplateBoardSize(shapeNow, 1, aspect)
+        let maxSize = Math.max(1, Math.floor(Math.min(state.areaX / unitBoard.w, state.areaY / unitBoard.h)))
+        let minSize = Math.min(80, maxSize)
+        if (state.size > maxSize) {
+            state.size = maxSize
+            fitMessage = `Board reduced to ${Units.fmt(maxSize, 'size')} so it fits your ${Units.pair(state.areaX, state.areaY)} plotter.`
+        }
+        state.size = Math.max(minSize, state.size)
+        sizeBox.min = minSize
+        sizeBox.max = maxSize
+        sizeBox.value = state.size
+        document.getElementById('tpl-size-value').textContent = Units.fmt(state.size, 'size')
+        let fit = document.getElementById('tpl-fit')
+        fit.textContent = fitMessage || `Up to ${Units.fmt(maxSize, 'size')} for this shape on your ${Units.pair(state.areaX, state.areaY)} plotter.`
+        fit.classList.toggle('warn-note', !!fitMessage)
+
         model = BuildTemplate({
             source: state.source, shape: state.shape, layout: state.layout, count: state.count,
             size: state.size, inset: state.inset, step: state.step, seed: state.seed, generator: generator
@@ -908,7 +926,6 @@ async function TemplateToPDF(m, paperKey, unit) {
         markPressed(document.getElementById('tpl-layout'), model.layout)
         markPressed(document.getElementById('tpl-step'), state.step)
         markPressed(document.getElementById('tpl-paper'), state.paper)
-        markPressed(document.getElementById('tpl-unit'), state.unit)
         shapes.querySelectorAll('button').forEach(b => b.disabled = fromArt)
         document.querySelectorAll('#tpl-layout button').forEach(b => b.disabled = fromArt)
         countBox.disabled = fromArt
@@ -917,22 +934,22 @@ async function TemplateToPDF(m, paperKey, unit) {
         // Show the real count: a grid can hold a few nails more or less than the slider asks for
         document.getElementById('tpl-count-value').textContent = model.count.toLocaleString('en')
 
-        let desc = TemplateDescription(model, state.unit)
+        let desc = TemplateDescription(model, Units.unit)
         let L = TemplatePageLayout(model, state.paper)
         let pagesText = L.tiled ? `PDF: ${L.pages} ${L.paper.name} page${L.pages > 1 ? 's' : ''} (${L.cols} × ${L.rows}${L.landscape ? ', landscape' : ''})` :
-            `PDF: one ${TemplateFormatMm(model.pageW, state.unit).split(' ')[0]} × ${TemplateFormatMm(model.pageH, state.unit)} sheet`
+            `PDF: one ${TemplateFormatMm(model.pageW, Units.unit).split(' ')[0]} × ${TemplateFormatMm(model.pageH, Units.unit)} sheet`
         let warn = model.spacing < 3 ? `<span class="warn">Nails are only ${model.spacing.toFixed(1)} mm apart. Use fewer nails or a bigger board.</span>` : ''
 
         dimsNote.textContent = `Board: ${desc.dims}`
         info.innerHTML =
             `<span class="stat"><b>${model.count}</b> nails</span>` +
             `<span class="stat"><b>${desc.dims}</b> board</span>` +
-            `<span class="stat"><b>${TemplateFormatSpacing(model.spacing, state.unit)}</b> min. spacing</span>` +
+            `<span class="stat"><b>${TemplateFormatSpacing(model.spacing, Units.unit)}</b> min. spacing</span>` +
             `<span class="stat">${pagesText}</span>` + warn
 
         // Preview: the same sheet as the exports, plus dashed page splits when printing on tiles
         let out = new SvgTemplateRenderer(model.pageW, model.pageH)
-        DrawTemplateSheet(out, model, 0, 0, state.unit)
+        DrawTemplateSheet(out, model, 0, 0, Units.unit)
 
         if (L.tiled) {
             let split = { stroke: '#2B5246', width: Math.max(0.4, model.pageW / 500), dash: [4, 3] }
@@ -988,15 +1005,15 @@ async function TemplateToPDF(m, paperKey, unit) {
     }
 
     document.getElementById('tpl-pdf').addEventListener('click', (e) => run(e.currentTarget, async () => {
-        DownloadBlob(await TemplateToPDF(model, state.paper, state.unit), TemplateFileName(model, 'pdf'))
+        DownloadBlob(await TemplateToPDF(model, state.paper, Units.unit), TemplateFileName(model, 'pdf'))
     }))
 
     document.getElementById('tpl-svg').addEventListener('click', (e) => run(e.currentTarget, async () => {
-        DownloadBlob(new Blob([TemplateToSVG(model, state.unit)], { type: 'image/svg+xml' }), TemplateFileName(model, 'svg'))
+        DownloadBlob(new Blob([TemplateToSVG(model, Units.unit)], { type: 'image/svg+xml' }), TemplateFileName(model, 'svg'))
     }))
 
     document.getElementById('tpl-png').addEventListener('click', (e) => run(e.currentTarget, async () => {
-        DownloadBlob(await TemplateToPNG(model, state.unit), TemplateFileName(model, 'png'))
+        DownloadBlob(await TemplateToPNG(model, Units.unit), TemplateFileName(model, 'png'))
     }))
 
     // Keep "from string art" in step with the generator
@@ -1031,7 +1048,6 @@ async function TemplateToPDF(m, paperKey, unit) {
     document.addEventListener('stringart:mode', (e) => { if (e.detail.mode != 'art') refresh() })
 
 
-    writeSizes()
     countBox.value = state.count
     refresh()
 })()

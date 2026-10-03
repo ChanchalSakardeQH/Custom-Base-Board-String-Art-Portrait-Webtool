@@ -49,7 +49,14 @@
         </div>
         <div class="topbar-right">
             <span class="topbar-sites"><a href="https://woodyouloveit.com" target="_blank" rel="noopener">woodyouloveit.com</a> · <a href="https://wooduloveit.com" target="_blank" rel="noopener">wooduloveit.com</a></span>
-            <button type="button" class="btn btn-accent" id="select-btn">Choose image</button>
+            <div class="unit-switch" role="group" aria-label="Units">
+                <span class="unit-label">Units</span>
+                <div class="segmented" id="unit-switch">
+                    <button type="button" data-value="mm" aria-pressed="true">mm</button>
+                    <button type="button" data-value="cm">cm</button>
+                    <button type="button" data-value="in">inch</button>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -94,6 +101,7 @@
 
             <section class="group">
                 <h2>Photo</h2>
+                <button type="button" class="btn btn-paper wide photo-btn" id="select-btn">Choose photo…</button>
                 <div class="field">
                     <div class="field-row"><label for="contrast-box">Contrast</label><output id="contrast-value">0</output></div>
                     <input type="range" id="contrast-box" value="0" min="-100" max="100" step="5" disabled>
@@ -229,20 +237,20 @@
                 <section class="group">
                     <h2>Size</h2>
                     <div class="field">
-                        <span class="field-label" id="tpl-unit-label">Units</span>
-                        <div class="segmented" id="tpl-unit" role="group" aria-labelledby="tpl-unit-label">
-                            <button type="button" data-value="mm">mm</button>
-                            <button type="button" data-value="cm">cm</button>
-                            <button type="button" data-value="in">inches</button>
+                        <span class="field-label">XY plotter workable area (<span class="u-len">mm</span>)</span>
+                        <div class="two-col">
+                            <div class="field area-field"><label class="field-label" for="tpl-area-x">X travel</label><input type="number" id="tpl-area-x"></div>
+                            <div class="field area-field"><label class="field-label" for="tpl-area-y">Y travel</label><input type="number" id="tpl-area-y"></div>
                         </div>
                     </div>
                     <div class="field">
-                        <label for="tpl-size" class="field-label">Board size, longest side (<span class="tpl-unit-label">mm</span>)</label>
-                        <input type="number" id="tpl-size" value="400" min="0">
+                        <div class="field-row"><label for="tpl-size">Board size, longest side</label><output id="tpl-size-value" for="tpl-size">400 mm</output></div>
+                        <input type="range" id="tpl-size" value="400" min="80" max="450" step="1">
+                        <p class="note fit-note" id="tpl-fit"></p>
                     </div>
                     <div class="field">
-                        <label for="tpl-inset" class="field-label">Nails from board edge (<span class="tpl-unit-label">mm</span>)</label>
-                        <input type="number" id="tpl-inset" value="10" min="0">
+                        <label for="tpl-inset" class="field-label">Nails from board edge (<span class="u-len">mm</span>)</label>
+                        <input type="number" id="tpl-inset">
                     </div>
                     <p class="note" id="tpl-dims"></p>
                 </section>
@@ -269,10 +277,10 @@
             </div>
 
             <div class="actions">
-                <button type="button" class="btn btn-accent btn-big" id="tpl-pdf">Download PDF</button>
+                <button type="button" class="btn btn-paper btn-big" id="tpl-pdf">Download PDF</button>
                 <button type="button" class="btn btn-ghost" id="tpl-svg">SVG</button>
                 <button type="button" class="btn btn-ghost" id="tpl-png">PNG</button>
-                <button type="button" class="btn btn-ghost btn-next" data-next="plotter">Next: Plotter →</button>
+                <button type="button" class="btn btn-accent btn-next" data-next="plotter">Next: Plotter →</button>
             </div>
             <p class="busy" id="tpl-busy" aria-live="polite"></p>
         </div>
@@ -302,10 +310,10 @@
                     <div class="field"><span class="field-label" id="pl-origin-label">Work zero (X0 Y0) at the board</span><div class="segmented" data-choice="origin" role="group" aria-labelledby="pl-origin-label"><button type="button" data-value="bl">Bottom-left</button><button type="button" data-value="tl">Top-left</button><button type="button" data-value="c">Centre</button></div></div>
                     <div class="field"><span class="field-label" id="pl-yUp-label">Y axis points</span><div class="segmented" data-choice="yUp" role="group" aria-labelledby="pl-yUp-label"><button type="button" data-value="up">Up</button><button type="button" data-value="down">Down</button></div></div>
                     <div class="two-col">
-                        <div class="field"><label class="field-label" for="pl-offX">Offset X (mm)</label><input type="number" id="pl-offX" data-key="offX" step="any"></div>
-                        <div class="field"><label class="field-label" for="pl-offY">Offset Y (mm)</label><input type="number" id="pl-offY" data-key="offY" step="any"></div>
+                        <div class="field"><label class="field-label" for="pl-offX">Offset X (<span class="u-len">mm</span>)</label><input type="number" id="pl-offX" data-key="offX" data-dim="len" step="any"></div>
+                        <div class="field"><label class="field-label" for="pl-offY">Offset Y (<span class="u-len">mm</span>)</label><input type="number" id="pl-offY" data-key="offY" data-dim="len" step="any"></div>
                     </div>
-                    <div class="field"><label class="field-label" for="pl-travelFeed">Travel speed (mm/min)</label><input type="number" id="pl-travelFeed" data-key="travelFeed" step="1" min="100" max="20000"></div>
+                    <div class="field"><label class="field-label" for="pl-travelFeed">Travel speed (<span class="u-speed">mm/min</span>)</label><input type="number" id="pl-travelFeed" data-key="travelFeed" data-dim="speed" step="any"></div>
                 </section>
 
                 <section class="group">
@@ -320,10 +328,10 @@
                     </div>
                     <div data-tool="z" hidden>
                         <div class="two-col">
-                            <div class="field"><label class="field-label" for="pl-zUp">Z up (mm)</label><input type="number" id="pl-zUp" data-key="zUp" step="any" min="-100" max="200"></div>
-                            <div class="field"><label class="field-label" for="pl-zDown">Z down (mm)</label><input type="number" id="pl-zDown" data-key="zDown" step="any" min="-50" max="100"></div>
+                            <div class="field"><label class="field-label" for="pl-zUp">Z up (<span class="u-len">mm</span>)</label><input type="number" id="pl-zUp" data-key="zUp" data-dim="len" step="any"></div>
+                            <div class="field"><label class="field-label" for="pl-zDown">Z down (<span class="u-len">mm</span>)</label><input type="number" id="pl-zDown" data-key="zDown" data-dim="len" step="any"></div>
                         </div>
-                        <div class="field"><label class="field-label" for="pl-plungeFeed">Plunge speed (mm/min)</label><input type="number" id="pl-plungeFeed" data-key="plungeFeed" step="1" min="10" max="5000"></div>
+                        <div class="field"><label class="field-label" for="pl-plungeFeed">Plunge speed (<span class="u-speed">mm/min</span>)</label><input type="number" id="pl-plungeFeed" data-key="plungeFeed" data-dim="speed" step="any"></div>
                         <p class="note">Z0 is the board surface. A negative Z down with a "Dot" mark drills pilot holes.</p>
                     </div>
                     <div data-tool="laser" hidden>
@@ -332,8 +340,8 @@
                     </div>
                     <div class="field"><span class="field-label" id="pl-mark-label">Mark</span><div class="segmented" data-choice="mark" role="group" aria-labelledby="pl-mark-label"><button type="button" data-value="dot">Dot</button><button type="button" data-value="cross">Cross</button><button type="button" data-value="circle">Circle</button></div></div>
                     <div class="two-col">
-                        <div class="field"><label class="field-label" for="pl-markSize">Mark size (mm)</label><input type="number" id="pl-markSize" data-key="markSize" step="0.1" min="0.2" max="20"></div>
-                        <div class="field"><label class="field-label" for="pl-drawFeed">Drawing speed (mm/min)</label><input type="number" id="pl-drawFeed" data-key="drawFeed" step="1" min="10" max="20000"></div>
+                        <div class="field"><label class="field-label" for="pl-markSize">Mark size (<span class="u-len">mm</span>)</label><input type="number" id="pl-markSize" data-key="markSize" data-dim="len" step="any"></div>
+                        <div class="field"><label class="field-label" for="pl-drawFeed">Drawing speed (<span class="u-speed">mm/min</span>)</label><input type="number" id="pl-drawFeed" data-key="drawFeed" data-dim="speed" step="any"></div>
                     </div>
                     <div class="field"><span class="field-label" id="pl-numbers-label">Write pin numbers</span><div class="segmented" data-choice="numbers" role="group" aria-labelledby="pl-numbers-label"><button type="button" data-value="off">Off</button><button type="button" data-value="all">All</button><button type="button" data-value="5">Every 5</button><button type="button" data-value="10">Every 10</button></div></div>
                 </section>
@@ -347,21 +355,21 @@
                     </label>
                     <div data-needs-z>
                         <div class="two-col">
-                            <div class="field"><label class="field-label" for="pl-windZ">Winding Z (mm)</label><input type="number" id="pl-windZ" data-key="windZ" step="any" min="-50" max="200"></div>
-                            <div class="field"><label class="field-label" for="pl-safeZ">Safe Z (mm)</label><input type="number" id="pl-safeZ" data-key="safeZ" step="any" min="-50" max="300"></div>
+                            <div class="field"><label class="field-label" for="pl-windZ">Winding Z (<span class="u-len">mm</span>)</label><input type="number" id="pl-windZ" data-key="windZ" data-dim="len" step="any"></div>
+                            <div class="field"><label class="field-label" for="pl-safeZ">Safe Z (<span class="u-len">mm</span>)</label><input type="number" id="pl-safeZ" data-key="safeZ" data-dim="len" step="any"></div>
                         </div>
                         <p class="note">Winding Z puts the guide tip below the nail heads. Safe Z clears them.</p>
                         <div class="field"><span class="field-label" id="pl-lift-label">Lift over nails between wraps</span><div class="segmented" data-choice="lift" role="group" aria-labelledby="pl-lift-label"><button type="button" data-value="auto">Auto</button><button type="button" data-value="always">Always</button><button type="button" data-value="never">Never</button></div></div>
                     </div>
                     <div class="two-col">
-                        <div class="field"><label class="field-label" for="pl-nailDia">Nail diameter (mm)</label><input type="number" id="pl-nailDia" data-key="nailDia" step="0.1" min="0.3" max="10"></div>
-                        <div class="field"><label class="field-label" for="pl-guideDia">Guide diameter (mm)</label><input type="number" id="pl-guideDia" data-key="guideDia" step="0.1" min="0.2" max="10"></div>
+                        <div class="field"><label class="field-label" for="pl-nailDia">Nail diameter (<span class="u-len">mm</span>)</label><input type="number" id="pl-nailDia" data-key="nailDia" data-dim="len" step="any"></div>
+                        <div class="field"><label class="field-label" for="pl-guideDia">Guide diameter (<span class="u-len">mm</span>)</label><input type="number" id="pl-guideDia" data-key="guideDia" data-dim="len" step="any"></div>
                     </div>
-                    <div class="field"><label class="field-label" for="pl-wrapR">Wrap radius (guide centre to nail centre) (mm)</label><input type="number" id="pl-wrapR" data-key="wrapR" step="0.1" min="0.5" max="20"></div>
+                    <div class="field"><label class="field-label" for="pl-wrapR">Wrap radius, guide to nail centre (<span class="u-len">mm</span>)</label><input type="number" id="pl-wrapR" data-key="wrapR" data-dim="len" step="any"></div>
                     <div class="field"><span class="field-label" id="pl-dir-label">Wrap direction</span><div class="segmented" data-choice="dir" role="group" aria-labelledby="pl-dir-label"><button type="button" data-value="cw">Clockwise</button><button type="button" data-value="ccw">Counter-clockwise</button></div></div>
                     <div class="field"><span class="field-label" id="pl-turns-label">Wrap</span><div class="segmented" data-choice="turns" role="group" aria-labelledby="pl-turns-label"><button type="button" data-value="1">Normal</button><button type="button" data-value="2">Extra full turn</button></div></div>
                     <div class="two-col">
-                        <div class="field"><label class="field-label" for="pl-windFeed">Wrap speed (mm/min)</label><input type="number" id="pl-windFeed" data-key="windFeed" step="1" min="10" max="20000"></div>
+                        <div class="field"><label class="field-label" for="pl-windFeed">Wrap speed (<span class="u-speed">mm/min</span>)</label><input type="number" id="pl-windFeed" data-key="windFeed" data-dim="speed" step="any"></div>
                         <div class="field"><label class="field-label" for="pl-pauseEvery">Pause every (lines)</label><input type="number" id="pl-pauseEvery" data-key="pauseEvery" step="1" min="0" max="100000"></div>
                     </div>
                     <p class="note">The guide travels to the side of each nail facing the previous nail, then circles round to face the next one (always at least half a turn) so the thread hooks. "Pause every" adds M0 stops to check tension (0 = never).</p>
@@ -370,9 +378,11 @@
             </div>
 
             <div class="actions">
-                <button type="button" class="btn btn-accent btn-big" id="plotter-nails">Download nail G-code</button>
-                <button type="button" class="btn btn-ghost btn-big" id="plotter-wind" disabled>Download winding G-code</button>
-                <button type="button" class="btn btn-ghost btn-big btn-next" data-next="machine">Next: run on the machine →</button>
+                <div class="btn-grid">
+                    <button type="button" class="btn btn-paper" id="plotter-nails">Download nail G-code</button>
+                    <button type="button" class="btn btn-paper" id="plotter-wind" disabled>Download winding G-code</button>
+                </div>
+                <button type="button" class="btn btn-accent btn-big btn-next" data-next="machine">Next: run on the machine →</button>
             </div>
         </div>
 
@@ -405,12 +415,12 @@
                 <section class="group">
                     <h2>Jog</h2>
                     <div class="field">
-                        <span class="field-label" id="mc-step-label">Step</span>
+                        <span class="field-label" id="mc-step-label">Step (<span class="u-len">mm</span>)</span>
                         <div class="segmented" id="mc-step" role="group" aria-labelledby="mc-step-label">
                             <button type="button" data-value="0.1">0.1</button>
                             <button type="button" data-value="1">1</button>
                             <button type="button" data-value="10" aria-pressed="true">10</button>
-                            <button type="button" data-value="50">50 mm</button>
+                            <button type="button" data-value="50">50</button>
                         </div>
                     </div>
                     <div class="jog-wrap">
@@ -431,8 +441,8 @@
                         </div>
                     </div>
                     <div class="field">
-                        <label class="field-label" for="mc-jog-feed">Jog speed (mm/min)</label>
-                        <input type="number" id="mc-jog-feed" value="1500" min="10" max="20000" step="10">
+                        <label class="field-label" for="mc-jog-feed">Jog speed (<span class="u-speed">mm/min</span>)</label>
+                        <input type="number" id="mc-jog-feed">
                     </div>
                     <label class="check">
                         <input type="checkbox" id="mc-keys">
@@ -508,6 +518,11 @@
             </div>
         </div>
 
+        <div class="board-brand" aria-label="woodyouloveit">
+            <a href="https://woodyouloveit.com" target="_blank" rel="noopener"><img src="docs/logo.png" alt="woodyouloveit" width="911" height="151"></a>
+            <span class="board-brand-text"><b>woodyouloveit.com · wooduloveit.com</b><span>© 2026 Chanchal Sakarde · GPL-3.0</span></span>
+        </div>
+
         <div class="status">
             <div class="thread" aria-hidden="true"><div class="thread-fill" id="thread-fill"></div></div>
             <div id="info-box" class="info" aria-live="polite"></div>
@@ -556,7 +571,7 @@
                 <div class="axis"><span class="axis-name">X</span><span class="axis-w" id="mc-wx">0.00</span><span class="axis-m">machine <span id="mc-mx">0.00</span></span></div>
                 <div class="axis"><span class="axis-name">Y</span><span class="axis-w" id="mc-wy">0.00</span><span class="axis-m">machine <span id="mc-my">0.00</span></span></div>
                 <div class="axis"><span class="axis-name">Z</span><span class="axis-w" id="mc-wz">0.00</span><span class="axis-m">machine <span id="mc-mz">0.00</span></span></div>
-                <div class="axis small"><span class="axis-name">Feed</span><span class="axis-w" id="mc-feed">0</span><span class="axis-m">mm/min · <span id="mc-ov">100%</span></span></div>
+                <div class="axis small"><span class="axis-name">Feed</span><span class="axis-w" id="mc-feed">0</span><span class="axis-m"><span class="u-speed">mm/min</span> · <span id="mc-ov">100%</span></span></div>
             </div>
 
             <div class="mc-banner" id="mc-banner" hidden role="status">
@@ -584,6 +599,11 @@
                             <span class="check-box" aria-hidden="true"></span>
                             <span>Dry run in check mode ($C): GRBL checks every line without moving</span>
                         </label>
+                        <div class="job-nav" id="mc-job-nav">
+                            <button type="button" class="btn btn-ghost" id="mc-prev">← Previous</button>
+                            <span class="job-step" id="mc-job-step">Step 1 of 2</span>
+                            <button type="button" class="btn btn-accent" id="mc-next">Next →</button>
+                        </div>
                         <div class="btn-grid four">
                             <button type="button" class="btn btn-accent" id="mc-start">Start</button>
                             <button type="button" class="btn btn-ghost" id="mc-pause">Pause</button>
@@ -643,6 +663,7 @@
 </div>
 
 <script src="js/brand.js"></script>
+<script src="js/units.js"></script>
 <script src="js/constants.js"></script>
 <script src="js/string_art_generator.js"></script>
 <script src="js/init.js"></script>

@@ -17,15 +17,17 @@
 
 <p align="center">
   <a href="https://github.com/ChanchalSakardeQH/Custom-Base-Board-String-Art-Portrait-Webtool#GPL-3.0-1-ov-file"><img src="https://img.shields.io/badge/license-GPL--3.0-blue.svg" alt="License: GPL-3.0"></a>
-  <img src="https://img.shields.io/badge/version-4.3.0-E7004E.svg" alt="Version 4.3.0">
+  <img src="https://img.shields.io/badge/version-4.4.0-E7004E.svg" alt="Version 4.4.0">
   <img src="https://img.shields.io/badge/runs-in%20your%20browser-2B5246.svg" alt="Runs in your browser">
 </p>
 
-![String art mode](docs/screenshot-string-art.png "String art mode")
+![String art](docs/screenshots/desktop-1-string-art.png "Step 1: String art")
+
+**New here? Read the [step-by-step user guide](docs/GUIDE.md)** with desktop and mobile screenshots of every step.
 
 ## Four steps, one flow
 
-**1 String art → 2 Template → 3 Plotter → 4 Machine.** Generate the art once and every later step uses its board automatically; the Next buttons walk you through.
+**1 String art → 2 Template → 3 Plotter → 4 Machine.** Generate the art once and every later step uses its board automatically; the Next buttons walk you through. Pick **mm, cm or inch** in the top bar: every size, speed and position on every tab switches straight away.
 
 ### String art
 
@@ -35,7 +37,7 @@ Load a photo, position it on the board, and watch the thread being drawn line by
 
 Print an actual-size template with every nail position and its number. Tape it to your board, hammer a nail on each dot, then tear the paper away. You can make a template for a custom board, or one that uses the exact nails of the art you just generated.
 
-![Board template mode](docs/screenshot-board-template.png "Board template mode")
+![Template](docs/screenshots/desktop-2-template.png "Step 2: Template")
 
 ### Plotter (GRBL G-code)
 
